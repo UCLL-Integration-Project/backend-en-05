@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS "user" CASCADE;
 
-CREATE TABLE "user" (
+CREATE TABLE "users" (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(255),
     first_name VARCHAR(255),
