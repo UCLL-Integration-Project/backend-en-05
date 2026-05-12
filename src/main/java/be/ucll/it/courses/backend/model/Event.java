@@ -14,13 +14,25 @@ public class Event {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @jakarta.persistence.Column(name = "incident_id")
     private UUID incidentId;
 
+    @jakarta.persistence.Column(name = "timestamp")
     private OffsetDateTime timestamp;
+
+    @jakarta.persistence.Column(name = "temperature")
     private Float temperature;
+
+    @jakarta.persistence.Column(name = "battery_pct")
     private Integer batteryPct;
+
+    @jakarta.persistence.Column(name = "duration_s")
     private Integer durationS;
+
+    @jakarta.persistence.Column(name = "is_extinguished")
     private Boolean isExtinguished;
+
+    @jakarta.persistence.Column(name = "device_id")
     private String deviceId;
 
     public Event() {}
