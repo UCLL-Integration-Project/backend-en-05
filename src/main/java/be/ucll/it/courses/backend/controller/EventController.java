@@ -49,7 +49,7 @@ public class EventController {
         }
 
         String token = authorization.substring(7);
-
+        //trigger force
         // Validate Device ID and Token against DB
         var device = deviceRepository.findByDeviceIdAndDeviceToken(deviceId, token);
         if (device.isEmpty()) {
