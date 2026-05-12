@@ -16,12 +16,23 @@ public class User {
 
     private String lastName;
 
+    private String token;
+
     protected User(){}
 
-    public User(String username, String firstName, String lastName){
+    public User(String username, String firstName, String lastName, String token){
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.token = token;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
 

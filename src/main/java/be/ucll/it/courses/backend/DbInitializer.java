@@ -23,8 +23,8 @@ public class DbInitializer {
         clearAll();
 
         // Users
-        User user1 = new User("jdoe", "John", "Doe");
-        User user2 = new User("asmith", "Alice", "Smith");
+        User user1 = new User("jdoe", "John", "Doe", "user-token-01");
+        User user2 = new User("asmith", "Alice", "Smith", "user-token-02");
         userRepository.saveAll(List.of(user1, user2));
 
         // Devices
