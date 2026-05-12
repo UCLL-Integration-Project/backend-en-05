@@ -11,26 +11,34 @@ import java.util.List;
 public class DbInitializer {
 
     private final UserRepository userRepository;
+    private final be.ucll.it.courses.backend.repository.DeviceRepository deviceRepository;
 
-    public DbInitializer(UserRepository userRepository) {
+    public DbInitializer(UserRepository userRepository, be.ucll.it.courses.backend.repository.DeviceRepository deviceRepository) {
         this.userRepository = userRepository;
+        this.deviceRepository = deviceRepository;
     }
 
     @PostConstruct
     public void initializeData() {
         clearAll();
 
+        // Users
         User user1 = new User("jdoe", "John", "Doe");
         User user2 = new User("asmith", "Alice", "Smith");
-        User user3 = new User("bjones", "Bob", "Jones");
-        User user4 = new User("emartinez", "Elena", "Martinez");
+        userRepository.saveAll(List.of(user1, user2));
 
-        userRepository.saveAll(List.of(user1, user2, user3, user4));
+        // Devices
+        be.ucll.it.courses.backend.model.Device dev1 = new be.ucll.it.courses.backend.model.Device("ESP32-01", "token-01", "Front Lobby Robot");
+        be.ucll.it.courses.backend.model.Device dev2 = new be.ucll.it.courses.backend.model.Device("ESP32-02", "token-02", "Server Room Robot");
+        be.ucll.it.courses.backend.model.Device dev3 = new be.ucll.it.courses.backend.model.Device("ESP32-03", "token-03", "Warehouse Robot");
+        be.ucll.it.courses.backend.model.Device dev4 = new be.ucll.it.courses.backend.model.Device("ESP32-04", "token-04", "Kitchen Robot");
+        deviceRepository.saveAll(List.of(dev1, dev2, dev3, dev4));
 
-        System.out.println("Database initialized with " + userRepository.count() + " users.");
+        System.out.println("Database initialized with users and " + deviceRepository.count() + " devices.");
     }
 
     public void clearAll() {
+        deviceRepository.deleteAll();
         userRepository.deleteAll();
     }
 }

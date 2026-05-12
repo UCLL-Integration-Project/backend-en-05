@@ -1,0 +1,33 @@
+package be.ucll.it.courses.backend.service;
+
+import be.ucll.it.courses.backend.controller.dto.EventRequest;
+import be.ucll.it.courses.backend.controller.dto.EventResponse;
+import be.ucll.it.courses.backend.model.Event;
+import be.ucll.it.courses.backend.repository.EventRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class EventService {
+
+    private final EventRepository eventRepository;
+
+    @Autowired
+    public EventService(EventRepository eventRepository) {
+        this.eventRepository = eventRepository;
+    }
+
+    public EventResponse createEvent(EventRequest request, String deviceId) {
+        Event event = new Event();
+        event.setTimestamp(request.timestamp());
+        event.setTemperature(request.temperature());
+        event.setBatteryPct(request.battery_pct());
+        event.setDurationS(request.duration_s());
+        event.setIsExtinguished(request.is_extinguished());
+        event.setDeviceId(deviceId);
+
+        Event savedEvent = eventRepository.save(event);
+
+        return new EventResponse(savedEvent.getIncidentId(), "created");
+    }
+}
