@@ -9,8 +9,13 @@ import jakarta.persistence.Table;
 public class Device {
 
     @Id
+    @jakarta.persistence.Column(name = "device_id")
     private String deviceId;
+
+    @jakarta.persistence.Column(name = "device_token")
     private String deviceToken;
+
+    @jakarta.persistence.Column(name = "name")
     private String name;
 
     public Device() {}
