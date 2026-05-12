@@ -32,19 +32,31 @@ public class EventController {
             @RequestHeader(value = "X-Device-ID") String deviceId,
             @Valid @RequestBody EventRequest request) {
 
+        System.out.println("Received request from Device: " + deviceId);
+        
         if (authorization == null || !authorization.startsWith("Bearer ")) {
+            System.out.println("Auth header missing or invalid format");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         String token = authorization.substring(7);
+        System.out.println("Extracted Token: " + token);
 
         // Validate Device ID and Token against DB
-        if (deviceRepository.findByDeviceIdAndDeviceToken(deviceId, token).isEmpty()) {
+        var device = deviceRepository.findByDeviceIdAndDeviceToken(deviceId, token);
+        if (device.isEmpty()) {
+            System.out.println("Device NOT found in DB with ID: " + deviceId + " and Token: " + token);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+        System.out.println("Device validated: " + device.get().getName());
         EventResponse response = eventService.createEvent(request, deviceId);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @org.springframework.web.bind.annotation.GetMapping
+    public java.util.List<be.ucll.it.courses.backend.model.Event> getEvents() {
+        return eventService.getAllEvents();
     }
 }
 

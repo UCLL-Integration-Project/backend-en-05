@@ -6,6 +6,7 @@ import be.ucll.it.courses.backend.model.Event;
 import be.ucll.it.courses.backend.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 public class EventService {
@@ -15,6 +16,10 @@ public class EventService {
     @Autowired
     public EventService(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
+    }
+
+    public List<Event> getAllEvents() {
+        return eventRepository.findAll();
     }
 
     public EventResponse createEvent(EventRequest request, String deviceId) {
