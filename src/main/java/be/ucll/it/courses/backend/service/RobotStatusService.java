@@ -13,6 +13,7 @@ public class RobotStatusService {
     private static final long OFFLINE_THRESHOLD_MS = 30_000;
 
     private volatile Instant lastHeartbeat = null;
+    private volatile String lastDeviceId = null;
     private volatile boolean online = false;
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -23,6 +24,7 @@ public class RobotStatusService {
 
     public void recordHeartbeat(String deviceId) {
         lastHeartbeat = Instant.now();
+        lastDeviceId = deviceId;
         if (!online) {
             online = true;
             broadcastStatus(deviceId, true);
@@ -31,6 +33,18 @@ public class RobotStatusService {
 
     public boolean isOnline() {
         return online;
+    }
+
+    public Map<String, Object> getStatus() {
+        return Map.of(
+            "online", online,
+            "deviceId", lastDeviceId != null ? lastDeviceId : "unknown",
+            "wifi_connected", online,
+            "mode", online ? "patrolling" : "offline",
+            "battery_pct", 100,
+            "last_seen", lastHeartbeat != null ? lastHeartbeat.toString() : "",
+            "last_event_id", ""
+        );
     }
 
     @Scheduled(fixedDelay = 5000)
