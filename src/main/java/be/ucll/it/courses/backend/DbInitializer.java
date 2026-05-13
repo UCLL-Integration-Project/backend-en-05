@@ -35,7 +35,6 @@ public class DbInitializer {
 
     @PostConstruct
     public void initializeData() {
-<<<<<<< HEAD
         if (userRepository.count() == 0 || userRepository.findAll().stream().anyMatch(u -> u.getPassword() == null)) {
             userRepository.deleteAll();
             deviceRepository.deleteAll();
@@ -69,25 +68,21 @@ public class DbInitializer {
     }
 
     public void clearAll() {
+        telemetryRepository.deleteAll();
         deviceRepository.deleteAll();
         userRepository.deleteAll();
-=======
->>>>>>> 5de64d3 (webscot)
-        if (userRepository.count() == 0) {
-            userRepository.saveAll(List.of(
-                new User("admin",  "Administrator", "",      "user-token-admin", passwordEncoder.encode("admin123")),
-                new User("jdoe",   "John",          "Doe",   "user-token-01",    passwordEncoder.encode("password123")),
-                new User("asmith", "Alice",         "Smith", "user-token-02",    passwordEncoder.encode("password123"))
-            ));
-        }
+        
+        userRepository.saveAll(List.of(
+            new User("admin",  "Administrator", "",      "user-token-admin", passwordEncoder.encode("admin123")),
+            new User("jdoe",   "John",          "Doe",   "user-token-01",    passwordEncoder.encode("password123")),
+            new User("asmith", "Alice",         "Smith", "user-token-02",    passwordEncoder.encode("password123"))
+        ));
 
-        if (deviceRepository.count() == 0) {
-            deviceRepository.saveAll(List.of(
-                new Device("ESP32-01", "token-01", "Front Lobby Robot"),
-                new Device("ESP32-02", "token-02", "Server Room Robot"),
-                new Device("ESP32-03", "token-03", "Warehouse Robot"),
-                new Device("ESP32-04", "token-04", "Kitchen Robot")
-            ));
-        }
+        deviceRepository.saveAll(List.of(
+            new Device("ESP32-01", "token-01", "Front Lobby Robot"),
+            new Device("ESP32-02", "token-02", "Server Room Robot"),
+            new Device("ESP32-03", "token-03", "Warehouse Robot"),
+            new Device("ESP32-04", "token-04", "Kitchen Robot")
+        ));
     }
 }
