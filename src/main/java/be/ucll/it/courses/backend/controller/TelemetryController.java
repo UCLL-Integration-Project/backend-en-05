@@ -1,0 +1,49 @@
+package be.ucll.it.courses.backend.controller;
+
+import be.ucll.it.courses.backend.model.Telemetry;
+import be.ucll.it.courses.backend.repository.TelemetryRepository;
+import be.ucll.it.courses.backend.repository.DeviceRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.OffsetDateTime;
+
+@RestController
+@RequestMapping("/telemetry")
+public class TelemetryController {
+
+    private final TelemetryRepository telemetryRepository;
+    private final DeviceRepository deviceRepository;
+
+    @Autowired
+    public TelemetryController(TelemetryRepository telemetryRepository, DeviceRepository deviceRepository) {
+        this.telemetryRepository = telemetryRepository;
+        this.deviceRepository = deviceRepository;
+    }
+
+    @PostMapping
+    public ResponseEntity<Void> postTelemetry(
+            @RequestHeader(value = "Authorization") String authorization,
+            @RequestHeader(value = "X-Device-ID") String deviceId,
+            @RequestBody Telemetry telemetry) {
+
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String token = authorization.substring(7);
+
+        // Validate Device ID and Token against DB
+        var device = deviceRepository.findByDeviceIdAndDeviceToken(deviceId, token);
+        if (device.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        telemetry.setTime(OffsetDateTime.now());
+        telemetryRepository.save(telemetry);
+        
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+}

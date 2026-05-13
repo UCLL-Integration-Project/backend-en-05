@@ -1,14 +1,17 @@
 package be.ucll.it.courses.backend;
 
 import be.ucll.it.courses.backend.model.Device;
+import be.ucll.it.courses.backend.model.Telemetry;
 import be.ucll.it.courses.backend.model.User;
 import be.ucll.it.courses.backend.repository.DeviceRepository;
+import be.ucll.it.courses.backend.repository.TelemetryRepository;
 import be.ucll.it.courses.backend.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Component
@@ -17,11 +20,16 @@ public class DbInitializer {
 
     private final UserRepository userRepository;
     private final DeviceRepository deviceRepository;
+    private final TelemetryRepository telemetryRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public DbInitializer(UserRepository userRepository, DeviceRepository deviceRepository, PasswordEncoder passwordEncoder) {
+    public DbInitializer(UserRepository userRepository, 
+                         DeviceRepository deviceRepository, 
+                         TelemetryRepository telemetryRepository,
+                         PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.deviceRepository = deviceRepository;
+        this.telemetryRepository = telemetryRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -30,6 +38,7 @@ public class DbInitializer {
         if (userRepository.count() == 0 || userRepository.findAll().stream().anyMatch(u -> u.getPassword() == null)) {
             userRepository.deleteAll();
             deviceRepository.deleteAll();
+            telemetryRepository.deleteAll();
 
             // Users
             User admin = new User("admin", "Administrator", "System", "user-token-admin", passwordEncoder.encode("admin123"));
@@ -44,7 +53,15 @@ public class DbInitializer {
             be.ucll.it.courses.backend.model.Device dev4 = new be.ucll.it.courses.backend.model.Device("ESP32-04", "token-04", "Kitchen Robot");
             deviceRepository.saveAll(List.of(dev1, dev2, dev3, dev4));
 
-            System.out.println("Database initialized with " + userRepository.count() + " users and " + deviceRepository.count() + " devices.");
+            // Telemetry
+            Telemetry t1 = new Telemetry();
+            t1.setTime(OffsetDateTime.now());
+            t1.setBatteryVoltage(12.6f);
+            t1.setTemperatureC(22.5f);
+            t1.setPumpActive(false);
+            telemetryRepository.save(t1);
+
+            System.out.println("Database initialized with " + userRepository.count() + " users, " + deviceRepository.count() + " devices and initial telemetry.");
         } else {
             System.out.println("Database already contains data, skipping initialization.");
         }
