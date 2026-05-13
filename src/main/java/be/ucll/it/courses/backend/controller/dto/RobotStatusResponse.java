@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public record RobotStatusResponse(
     RobotMode mode,
-    Integer battery_pct,
+    Short battery_pct,
     Boolean wifi_connected,
     OffsetDateTime last_seen,
     UUID last_event_id

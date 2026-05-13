@@ -15,7 +15,7 @@ public record EventRequest(
     @NotNull(message = "Battery percentage is required")
     @Min(value = 0, message = "Battery percentage must be at least 0")
     @Max(value = 100, message = "Battery percentage must be at most 100")
-    Integer battery_pct,
+    Short battery_pct,
 
     Integer duration_s,
 
