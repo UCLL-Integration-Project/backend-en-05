@@ -24,7 +24,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**", "/events/**").permitAll()
+                .requestMatchers("/auth/**", "/events/**", "/robot/**", "/ws/**").permitAll()
                 .anyRequest().permitAll()
             );
         return http.build();
