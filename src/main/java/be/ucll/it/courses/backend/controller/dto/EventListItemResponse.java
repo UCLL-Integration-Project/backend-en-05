@@ -7,7 +7,7 @@ public record EventListItemResponse(
     UUID incident_id,
     OffsetDateTime timestamp,
     Float temperature,
-    Integer battery_pct,
+    Short battery_pct,
     Integer duration_s,
     Boolean is_extinguished
 ) {}

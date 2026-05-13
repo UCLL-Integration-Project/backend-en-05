@@ -53,7 +53,7 @@ public class StatusService {
             mode = RobotMode.patrolling;
         }
 
-        Integer batteryPct = 100;
+        Short batteryPct = 100;
         if (latestEvent.isPresent() && latestEvent.get().getBatteryPct() != null) {
             batteryPct = latestEvent.get().getBatteryPct();
         }
