@@ -1,4 +1,4 @@
-git stat    CREATE TABLE fire_events (
+CREATE TABLE fire_events (
     incident_id      UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     timestamp        TIMESTAMPTZ  NOT NULL,
     temperature      REAL,
