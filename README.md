@@ -52,3 +52,7 @@ Devices are validated against the `devices` table. Initial test devices are seed
 | ESP32-02 | token-02 |
 | ESP32-03 | token-03 |
 | ESP32-04 | token-04 |
+
+
+Small change
+
