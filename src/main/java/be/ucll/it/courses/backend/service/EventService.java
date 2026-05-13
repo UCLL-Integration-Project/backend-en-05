@@ -1,19 +1,19 @@
 package be.ucll.it.courses.backend.service;
 
+import be.ucll.it.courses.backend.controller.dto.EventListItemResponse;
+import be.ucll.it.courses.backend.controller.dto.EventListResponse;
 import be.ucll.it.courses.backend.controller.dto.EventRequest;
 import be.ucll.it.courses.backend.controller.dto.EventResponse;
 import be.ucll.it.courses.backend.model.Event;
 import be.ucll.it.courses.backend.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import java.util.List;
-
-import be.ucll.it.courses.backend.controller.dto.EventListItemResponse;
-import be.ucll.it.courses.backend.controller.dto.EventListResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,17 +32,12 @@ public class EventService {
         if (from != null) {
             spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("timestamp"), from));
         }
-
         if (to != null) {
             spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("timestamp"), to));
         }
 
-        // JPA PageRequest uses page index, not offset. 
-        // We'll use a simple conversion: page = offset / limit
         int page = offset / limit;
-        PageRequest pageRequest = PageRequest.of(page, limit);
-
-        Page<Event> eventPage = eventRepository.findAll(spec, pageRequest);
+        Page<Event> eventPage = eventRepository.findAll(spec, PageRequest.of(page, limit));
 
         List<EventListItemResponse> eventList = eventPage.getContent().stream()
             .map(e -> new EventListItemResponse(
@@ -72,7 +67,6 @@ public class EventService {
         event.setDeviceId(deviceId);
 
         Event savedEvent = eventRepository.save(event);
-
         return new EventResponse(savedEvent.getIncidentId(), "created");
     }
 }
