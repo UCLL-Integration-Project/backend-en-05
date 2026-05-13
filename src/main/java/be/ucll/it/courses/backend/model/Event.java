@@ -25,7 +25,7 @@ public class Event {
     private Float temperature;
 
     @Column(name = "battery_pct")
-    private Integer batteryPct;
+    private Short batteryPct;
 
     @Column(name = "duration_s")
     private Integer durationS;
@@ -47,8 +47,8 @@ public class Event {
     public Float getTemperature() { return temperature; }
     public void setTemperature(Float temperature) { this.temperature = temperature; }
 
-    public Integer getBatteryPct() { return batteryPct; }
-    public void setBatteryPct(Integer batteryPct) { this.batteryPct = batteryPct; }
+    public Short getBatteryPct() { return batteryPct; }
+    public void setBatteryPct(Short batteryPct) { this.batteryPct = batteryPct; }
 
     public Integer getDurationS() { return durationS; }
     public void setDurationS(Integer durationS) { this.durationS = durationS; }
