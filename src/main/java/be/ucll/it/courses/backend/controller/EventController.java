@@ -1,24 +1,18 @@
 package be.ucll.it.courses.backend.controller;
 
 import be.ucll.it.courses.backend.controller.dto.EventRequest;
+import be.ucll.it.courses.backend.controller.dto.EventListResponse;
 import be.ucll.it.courses.backend.controller.dto.EventResponse;
 import be.ucll.it.courses.backend.service.EventService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import be.ucll.it.courses.backend.controller.dto.EventListResponse;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
-
 import java.util.List;
 
 @RestController
@@ -62,21 +56,20 @@ public class EventController {
 
     @GetMapping
     public ResponseEntity<EventListResponse> getEvents(
-            @RequestHeader(value = "Authorization") String authorization,
+            @RequestHeader(value = "Authorization", required = false) String authorization,
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to,
             @RequestParam(defaultValue = "50") int limit,
-            @RequestParam(defaultValue = "0") int offset) {
+            @RequestParam(defaultValue = "0") int offset,
+            HttpServletRequest request) {
 
-        // Validate Authorization header
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        // Accept session cookie or Bearer token
+        String token = AuthController.extractTokenFromCookie(request);
+        if (token == null && authorization != null && authorization.startsWith("Bearer ")) {
+            token = authorization.substring(7);
         }
 
-        String token = authorization.substring(7);
-
-        // Validate User Token against DB
-        if (userRepository.findByToken(token).isEmpty()) {
+        if (token == null || userRepository.findByToken(token).isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 

@@ -1,9 +1,17 @@
 CREATE TABLE users (
     id         BIGSERIAL    PRIMARY KEY,
+<<<<<<< HEAD
     username   VARCHAR(255),
     first_name VARCHAR(255),
     last_name  VARCHAR(255),
     token      VARCHAR(255)
+=======
+    username   VARCHAR(255) UNIQUE,
+    first_name VARCHAR(255),
+    last_name  VARCHAR(255),
+    token      VARCHAR(255),
+    password   VARCHAR(255)
+>>>>>>> ba86cfc (implementing login and logout page)
 );
 
 CREATE TABLE devices (

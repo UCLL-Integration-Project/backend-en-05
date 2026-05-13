@@ -23,13 +23,17 @@ public class User {
     @Column(name = "token")
     private String token;
 
+    @Column(name = "password")
+    private String password;
+
     protected User(){}
 
-    public User(String username, String firstName, String lastName, String token){
+    public User(String username, String firstName, String lastName, String token, String password){
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.token = token;
+        this.password = password;
     }
 
     public String getToken() {
@@ -71,5 +75,13 @@ public class User {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
