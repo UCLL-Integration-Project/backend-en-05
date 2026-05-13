@@ -25,7 +25,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**", "/events/**", "/robot/**", "/ws/**").permitAll()
+                .requestMatchers("/auth/**", "/events/**", "/robot/**", "/ws/**", "/command").permitAll()
                 .anyRequest().permitAll()
             )
             .headers(headers -> headers
@@ -62,7 +62,7 @@ public class SecurityConfig {
         // Allow all origins with patterns (safely handles credentials)
         configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Device-ID", "Cache-Control"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Device-ID", "Cache-Control", "X-Role"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L); // 1 hour cache

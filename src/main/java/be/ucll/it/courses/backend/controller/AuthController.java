@@ -77,7 +77,8 @@ public class AuthController {
         return ResponseEntity.ok(Map.of(
             "username", user.getUsername(),
             "firstName", user.getFirstName(),
-            "lastName", user.getLastName()
+            "lastName", user.getLastName(),
+            "token", user.getToken()
         ));
     }
 
@@ -102,7 +103,8 @@ public class AuthController {
             .<ResponseEntity<?>>map(user -> ResponseEntity.ok(Map.of(
                 "username", user.getUsername(),
                 "firstName", user.getFirstName(),
-                "lastName", user.getLastName()
+                "lastName", user.getLastName(),
+                "token", user.getToken()
             )))
             .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Session invalid.")));
     }
