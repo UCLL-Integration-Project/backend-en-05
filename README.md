@@ -15,12 +15,13 @@ To run this project locally, you need the following:
 The project is configured to use a native PostgreSQL database by default for local development.
 
 1.  Create a database named: `it-integration-project-local-test`
-2.  Configure your credentials in `src/main/resources/application-dev.properties`:
-    *   Set `spring.datasource.password` to your local PostgreSQL password.
+2.  Configure your credentials in `src/main/resources/application-dev.properties`: \* Set `spring.datasource.password` to your local PostgreSQL password.
+    TEST
 
 ## Running the Application
 
 1.  **Build the project**:
+
     ```bash
     mvn clean install -DskipTests
     ```
@@ -39,8 +40,8 @@ The API will be available at `http://localhost:8080`.
 
 ## API Endpoints
 
-*   **POST /events**: Stores a fire event. Requires `Authorization` (Bearer token) and `X-Device-ID` headers.
-*   **GET /events**: Retrieves all stored events for the frontend.
+- **POST /events**: Stores a fire event. Requires `Authorization` (Bearer token) and `X-Device-ID` headers.
+- **GET /events**: Retrieves all stored events for the frontend.
 
 ## Security
 
