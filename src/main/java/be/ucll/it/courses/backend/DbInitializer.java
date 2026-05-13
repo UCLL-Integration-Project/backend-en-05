@@ -6,7 +6,7 @@ import be.ucll.it.courses.backend.repository.DeviceRepository;
 import be.ucll.it.courses.backend.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,21 +17,25 @@ public class DbInitializer {
 
     private final UserRepository userRepository;
     private final DeviceRepository deviceRepository;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
 
-    public DbInitializer(UserRepository userRepository, DeviceRepository deviceRepository) {
+    public DbInitializer(UserRepository userRepository, DeviceRepository deviceRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.deviceRepository = deviceRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostConstruct
     public void initializeData() {
-<<<<<<< HEAD
-        if (userRepository.count() == 0 && deviceRepository.count() == 0) {
+        if (userRepository.count() == 0 || userRepository.findAll().stream().anyMatch(u -> u.getPassword() == null)) {
+            userRepository.deleteAll();
+            deviceRepository.deleteAll();
+
             // Users
-            User user1 = new User("jdoe", "John", "Doe", "user-token-01");
-            User user2 = new User("asmith", "Alice", "Smith", "user-token-02");
-            userRepository.saveAll(List.of(user1, user2));
+            User admin = new User("admin", "Administrator", "System", "user-token-admin", passwordEncoder.encode("admin123"));
+            User user1 = new User("jdoe", "John", "Doe", "user-token-01", passwordEncoder.encode("password123"));
+            User user2 = new User("asmith", "Alice", "Smith", "user-token-02", passwordEncoder.encode("password123"));
+            userRepository.saveAll(List.of(admin, user1, user2));
 
             // Devices
             be.ucll.it.courses.backend.model.Device dev1 = new be.ucll.it.courses.backend.model.Device("ESP32-01", "token-01", "Front Lobby Robot");
@@ -40,7 +44,7 @@ public class DbInitializer {
             be.ucll.it.courses.backend.model.Device dev4 = new be.ucll.it.courses.backend.model.Device("ESP32-04", "token-04", "Kitchen Robot");
             deviceRepository.saveAll(List.of(dev1, dev2, dev3, dev4));
 
-            System.out.println("Database initialized with users and " + deviceRepository.count() + " devices.");
+            System.out.println("Database initialized with " + userRepository.count() + " users and " + deviceRepository.count() + " devices.");
         } else {
             System.out.println("Database already contains data, skipping initialization.");
         }
@@ -49,7 +53,6 @@ public class DbInitializer {
     public void clearAll() {
         deviceRepository.deleteAll();
         userRepository.deleteAll();
-=======
         if (userRepository.count() == 0) {
             userRepository.saveAll(List.of(
                 new User("admin",  "Administrator", "",      "user-token-admin", passwordEncoder.encode("admin123")),
@@ -66,6 +69,5 @@ public class DbInitializer {
                 new Device("ESP32-04", "token-04", "Kitchen Robot")
             ));
         }
->>>>>>> ba86cfc (implementing login and logout page)
     }
 }

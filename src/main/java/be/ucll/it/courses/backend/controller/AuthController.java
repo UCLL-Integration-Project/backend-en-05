@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -27,13 +27,14 @@ public class AuthController {
     private static final String COOKIE_NAME = "session_token";
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
 
     private final Map<String, Integer> failedAttempts = new ConcurrentHashMap<>();
     private final Map<String, Long> lockoutUntil = new ConcurrentHashMap<>();
 
-    public AuthController(UserRepository userRepository) {
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/login")
