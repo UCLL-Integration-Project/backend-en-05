@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.OffsetDateTime;
 
 @RestController
-@RequestMapping("/telemetry")
+@RequestMapping("/v1/telemetry")
 public class TelemetryController {
 
     private final TelemetryRepository telemetryRepository;

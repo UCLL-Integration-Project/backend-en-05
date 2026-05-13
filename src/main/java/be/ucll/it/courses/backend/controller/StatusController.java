@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/status")
+@RequestMapping("/v1/status")
 public class StatusController {
 
     private final StatusService statusService;

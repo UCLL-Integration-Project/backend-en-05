@@ -16,7 +16,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/events")
+@RequestMapping("/v1/events")
 public class EventController {
 
     private final EventService eventService;

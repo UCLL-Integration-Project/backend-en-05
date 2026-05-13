@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/robot")
+@RequestMapping("/v1/robot")
 public class RobotController {
 
     private final RobotStatusService robotStatusService;

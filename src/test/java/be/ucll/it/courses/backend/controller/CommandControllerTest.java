@@ -50,7 +50,7 @@ public class CommandControllerTest {
                 "duration_ms", 1000
         );
 
-        mockMvc.perform(post("/command")
+        mockMvc.perform(post("/v1/command")
                         .header("Authorization", "Bearer " + VALID_TOKEN)
                         .header("X-Role", "admin")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -64,7 +64,7 @@ public class CommandControllerTest {
     void sendCommand_InvalidToken_ReturnsUnauthorized() throws Exception {
         Map<String, Object> body = Map.of("action", "stop");
 
-        mockMvc.perform(post("/command")
+        mockMvc.perform(post("/v1/command")
                         .header("Authorization", "Bearer " + INVALID_TOKEN)
                         .header("X-Role", "admin")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -76,7 +76,7 @@ public class CommandControllerTest {
     void sendCommand_MissingToken_ReturnsUnauthorized() throws Exception {
         Map<String, Object> body = Map.of("action", "stop");
 
-        mockMvc.perform(post("/command")
+        mockMvc.perform(post("/v1/command")
                         .header("X-Role", "admin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
@@ -87,7 +87,7 @@ public class CommandControllerTest {
     void sendCommand_NotAdmin_ReturnsForbidden() throws Exception {
         Map<String, Object> body = Map.of("action", "stop");
 
-        mockMvc.perform(post("/command")
+        mockMvc.perform(post("/v1/command")
                         .header("Authorization", "Bearer " + VALID_TOKEN)
                         .header("X-Role", "user")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -99,7 +99,7 @@ public class CommandControllerTest {
     void sendCommand_InvalidAction_ReturnsUnprocessableEntity() throws Exception {
         Map<String, Object> body = Map.of("action", "invalid_action");
 
-        mockMvc.perform(post("/command")
+        mockMvc.perform(post("/v1/command")
                         .header("Authorization", "Bearer " + VALID_TOKEN)
                         .header("X-Role", "admin")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -111,7 +111,7 @@ public class CommandControllerTest {
     void sendCommand_MissingAction_ReturnsBadRequest() throws Exception {
         Map<String, Object> body = Map.of("duration_ms", 500);
 
-        mockMvc.perform(post("/command")
+        mockMvc.perform(post("/v1/command")
                         .header("Authorization", "Bearer " + VALID_TOKEN)
                         .header("X-Role", "admin")
                         .contentType(MediaType.APPLICATION_JSON)

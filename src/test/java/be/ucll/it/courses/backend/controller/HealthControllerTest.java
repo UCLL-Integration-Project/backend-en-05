@@ -26,7 +26,7 @@ public class HealthControllerTest {
 
     @Test
     void health_WhenDbConnected_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/health"))
+        mockMvc.perform(get("/v1/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("ok"))
                 .andExpect(jsonPath("$.db").value("connected"))
@@ -37,7 +37,7 @@ public class HealthControllerTest {
     void health_WhenDbUnreachable_ReturnsServiceUnavailable() throws Exception {
         doThrow(new RuntimeException("DB down")).when(jdbcTemplate).execute(anyString());
 
-        mockMvc.perform(get("/health"))
+        mockMvc.perform(get("/v1/health"))
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.status").value("degraded"))
                 .andExpect(jsonPath("$.db").value("unreachable"));

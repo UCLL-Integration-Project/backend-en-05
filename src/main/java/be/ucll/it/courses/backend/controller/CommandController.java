@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("")
+@RequestMapping("/v1")
 public class CommandController {
 
     private final UserRepository userRepository;
