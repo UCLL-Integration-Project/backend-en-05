@@ -22,7 +22,6 @@ public class DbInitializer {
 
     @PostConstruct
     public void initializeData() {
-<<<<<<< HEAD
         if (userRepository.count() == 0 && deviceRepository.count() == 0) {
             // Users
             User user1 = new User("jdoe", "John", "Doe", "user-token-01");
@@ -30,21 +29,11 @@ public class DbInitializer {
             userRepository.saveAll(List.of(user1, user2));
 
             // Devices
-=======
-        if (userRepository.count() == 0) {
-            User user1 = new User("jdoe", "John", "Doe", "user-token-01");
-            User user2 = new User("asmith", "Alice", "Smith", "user-token-02");
-            userRepository.saveAll(List.of(user1, user2));
-        }
-
-        if (deviceRepository.count() == 0) {
->>>>>>> ccdc185 (implementing table creations methods)
             be.ucll.it.courses.backend.model.Device dev1 = new be.ucll.it.courses.backend.model.Device("ESP32-01", "token-01", "Front Lobby Robot");
             be.ucll.it.courses.backend.model.Device dev2 = new be.ucll.it.courses.backend.model.Device("ESP32-02", "token-02", "Server Room Robot");
             be.ucll.it.courses.backend.model.Device dev3 = new be.ucll.it.courses.backend.model.Device("ESP32-03", "token-03", "Warehouse Robot");
             be.ucll.it.courses.backend.model.Device dev4 = new be.ucll.it.courses.backend.model.Device("ESP32-04", "token-04", "Kitchen Robot");
             deviceRepository.saveAll(List.of(dev1, dev2, dev3, dev4));
-<<<<<<< HEAD
 
             System.out.println("Database initialized with users and " + deviceRepository.count() + " devices.");
         } else {
@@ -55,8 +44,5 @@ public class DbInitializer {
     public void clearAll() {
         deviceRepository.deleteAll();
         userRepository.deleteAll();
-=======
-        }
->>>>>>> ccdc185 (implementing table creations methods)
     }
 }
