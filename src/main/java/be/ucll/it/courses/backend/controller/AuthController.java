@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AuthController {
 
     private static final int MAX_ATTEMPTS = 5;
-    private static final long LOCKOUT_DURATION_MS = 15 * 60 * 1000L;
+    private static final long LOCKOUT_DURATION_MS = 2 * 60 * 1000L;
     private static final int SESSION_MAX_AGE = 24 * 60 * 60; // 24 hours
     private static final String COOKIE_NAME = "session_token";
 
@@ -47,7 +47,7 @@ public class AuthController {
         // Rate limiting check
         if (isLockedOut(username)) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(Map.of("error", "Too many failed attempts. Try again in 15 minutes."));
+                .body(Map.of("error", "Too many failed attempts. Try again in 1 minutes."));
         }
 
         Optional<User> userOpt = userRepository.findByUsername(username);
@@ -57,7 +57,7 @@ public class AuthController {
             int remaining = MAX_ATTEMPTS - failedAttempts.getOrDefault(username, 0);
             if (remaining <= 0) {
                 return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .body(Map.of("error", "Too many failed attempts. Try again in 15 minutes."));
+                    .body(Map.of("error", "Too many failed attempts. Try again in 1 minutes."));
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "Invalid username or password."));
