@@ -9,6 +9,7 @@ import be.ucll.it.courses.backend.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,7 @@ public class EventService {
     }
 
     public EventListResponse getEvents(OffsetDateTime from, OffsetDateTime to, int limit, int offset) {
-        Specification<Event> spec = (root, query, cb) -> cb.conjunction();
+        Specification<Event> spec = Specification.where(null);
 
         if (from != null) {
             spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("timestamp"), from));
@@ -37,7 +38,7 @@ public class EventService {
         }
 
         int page = offset / limit;
-        Page<Event> eventPage = eventRepository.findAll(spec, PageRequest.of(page, limit));
+        Page<Event> eventPage = eventRepository.findAll(spec, PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC, "timestamp")));
 
         List<EventListItemResponse> eventList = eventPage.getContent().stream()
             .map(e -> new EventListItemResponse(
