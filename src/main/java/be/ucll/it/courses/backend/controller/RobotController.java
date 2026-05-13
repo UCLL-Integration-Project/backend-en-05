@@ -40,6 +40,6 @@ public class RobotController {
 
     @GetMapping("/status")
     public ResponseEntity<?> status() {
-        return ResponseEntity.ok(Map.of("online", robotStatusService.isOnline()));
+        return ResponseEntity.ok(robotStatusService.getStatus());
     }
 }
