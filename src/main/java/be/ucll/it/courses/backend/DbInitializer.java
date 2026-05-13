@@ -35,6 +35,7 @@ public class DbInitializer {
 
     @PostConstruct
     public void initializeData() {
+<<<<<<< HEAD
         if (userRepository.count() == 0 || userRepository.findAll().stream().anyMatch(u -> u.getPassword() == null)) {
             userRepository.deleteAll();
             deviceRepository.deleteAll();
@@ -70,6 +71,8 @@ public class DbInitializer {
     public void clearAll() {
         deviceRepository.deleteAll();
         userRepository.deleteAll();
+=======
+>>>>>>> 5de64d3 (webscot)
         if (userRepository.count() == 0) {
             userRepository.saveAll(List.of(
                 new User("admin",  "Administrator", "",      "user-token-admin", passwordEncoder.encode("admin123")),

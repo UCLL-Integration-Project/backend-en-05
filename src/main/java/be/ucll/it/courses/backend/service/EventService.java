@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -21,10 +22,12 @@ import java.util.stream.Collectors;
 public class EventService {
 
     private final EventRepository eventRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-    public EventService(EventRepository eventRepository) {
+    public EventService(EventRepository eventRepository, SimpMessagingTemplate messagingTemplate) {
         this.eventRepository = eventRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public EventListResponse getEvents(OffsetDateTime from, OffsetDateTime to, int limit, int offset) {
@@ -68,6 +71,17 @@ public class EventService {
         event.setDeviceId(deviceId);
 
         Event savedEvent = eventRepository.save(event);
+
+        // Broadcast to all dashboard clients in real time
+        messagingTemplate.convertAndSend("/topic/events", new EventListItemResponse(
+            savedEvent.getIncidentId(),
+            savedEvent.getTimestamp(),
+            savedEvent.getTemperature(),
+            savedEvent.getBatteryPct(),
+            savedEvent.getDurationS(),
+            savedEvent.getIsExtinguished()
+        ));
+
         return new EventResponse(savedEvent.getIncidentId(), "created");
     }
 }
