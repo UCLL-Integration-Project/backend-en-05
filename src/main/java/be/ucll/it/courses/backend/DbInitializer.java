@@ -15,7 +15,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 @Component
-@Profile({"local", "dev"})
 public class DbInitializer {
 
     private final UserRepository userRepository;
