@@ -1,0 +1,41 @@
+name: Backend Production Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_to_rollback_to:
+        description: 'Enter the backend version tag to rollback'
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-backend
+
+jobs:
+  rollback-production:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull older stable image
+        run: |
+          IMAGE_LOWER=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          docker pull $IMAGE_LOWER:${{ inputs.version_to_rollback_to }}
+
+      - name: Re-tag as Production and Push
+        run: |
+          IMAGE_LOWER=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          docker tag $IMAGE_LOWER:${{ inputs.version_to_rollback_to }} $IMAGE_LOWER:prod
+          docker push $IMAGE_LOWER:prod
+
+      - name: Rollback Success Message
+        run: echo "Successfully rolled back Backend Production to version ${{ inputs.version_to_rollback_to }}"
