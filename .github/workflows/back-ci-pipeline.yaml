@@ -1,0 +1,33 @@
+name: Backend CI Pipeline
+
+# Triggers on every push to every branch
+on:
+  push:
+
+jobs:
+  build-test-and-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build and run tests
+        run: mvn clean test
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (CI Check)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: backend-app:ci-test
