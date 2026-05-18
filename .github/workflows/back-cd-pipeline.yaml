@@ -2,7 +2,7 @@ name: Backend CD Pipeline
 
 on:
   workflow_run:
-    workflows: ["Backend CI pipeline"]
+    workflows: ["Backend CI Pipeline"]
     types:
       - completed
 
@@ -32,7 +32,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Convert image name to lowercase
+      - name: Convert Image Name to Lowercase
         run: |
           echo "IMAGE_LOWER=$(echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
@@ -42,8 +42,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:staging
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.workflow_run.head_sha }}
+            ${{ env.IMAGE_LOWER }}:staging
+            ${{ env.IMAGE_LOWER }}:${{ github.event.workflow_run.head_sha }}
 
   # deploy to the production, runs only on release tags
   deploy-to-production:
@@ -66,7 +66,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Convert image name to lowercase
+      - name: Convert Image Name to Lowercase
         run: |
           echo "IMAGE_LOWER=$(echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
@@ -76,5 +76,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:prod
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.workflow_run.head_branch }}
+            ${{ env.IMAGE_LOWER }}:prod
+            ${{ env.IMAGE_LOWER }}:${{ github.event.workflow_run.head_branch }}
