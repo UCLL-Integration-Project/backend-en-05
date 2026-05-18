@@ -1,4 +1,4 @@
-name: Backend CI Pipeline
+name: Backend CI pipeline
 
 # Triggers on every push to every branch
 on:
