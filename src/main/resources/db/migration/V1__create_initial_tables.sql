@@ -13,9 +13,9 @@ CREATE TABLE IF NOT EXISTS devices (
     name         VARCHAR(255)
 );
 
-CREATE TABLE telemetry (
+CREATE TABLE IF NOT EXISTS telemetry (
     id               BIGSERIAL    PRIMARY KEY,
-    time             TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    time             TIMESTAMP WITH TIME ZONE  NOT NULL DEFAULT NOW(),
     battery_voltage  REAL,
     temperature_c    REAL,
     flame_left       SMALLINT,
@@ -26,18 +26,4 @@ CREATE TABLE telemetry (
     motor_right_pwm  SMALLINT
 );
 
-CREATE INDEX telemetry_time_desc_idx ON telemetry (time DESC);
-EXISTS telemetry (
-    id               BIGSERIAL    PRIMARY KEY,
-    time             TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    battery_voltage  REAL,
-    temperature_c    REAL,
-    flame_left       SMALLINT,
-    flame_center     SMALLINT,
-    flame_right      SMALLINT,
-    pump_active      BOOLEAN      NOT NULL DEFAULT FALSE,
-    motor_left_pwm   SMALLINT,
-    motor_right_pwm  SMALLINT
-);
-
-CREATE INDEX telemetry_time_desc_idx ON telemetry (time DESC);
+CREATE INDEX IF NOT EXISTS telemetry_time_desc_idx ON telemetry (time DESC);

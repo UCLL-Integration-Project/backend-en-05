@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS fire_events (
-    incident_id      UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    timestamp        TIMESTAMPTZ  NOT NULL,
+    incident_id      UUID         PRIMARY KEY,
+    timestamp        TIMESTAMP WITH TIME ZONE  NOT NULL,
     temperature      REAL,
     battery_pct      SMALLINT     CHECK (battery_pct BETWEEN 0 AND 100),
     duration_s       INTEGER,
