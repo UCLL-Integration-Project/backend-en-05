@@ -13,7 +13,7 @@ import java.lang.management.ManagementFactory;
 import java.util.concurrent.TimeUnit;
 
 @RestController
-@RequestMapping("/v1")
+@RequestMapping
 public class HealthController {
 
     private final JdbcTemplate jdbcTemplate;
@@ -25,7 +25,12 @@ public class HealthController {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @GetMapping("/health")
+    @GetMapping("/")
+    public ResponseEntity<String> root() {
+        return ResponseEntity.ok("Fire Detection Backend is running");
+    }
+
+    @GetMapping("/v1/health")
     public ResponseEntity<HealthResponse> health() {
         long uptimeMs = ManagementFactory.getRuntimeMXBean().getUptime();
         long uptimeS = TimeUnit.MILLISECONDS.toSeconds(uptimeMs);
