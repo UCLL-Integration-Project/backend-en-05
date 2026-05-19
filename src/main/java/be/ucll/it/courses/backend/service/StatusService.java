@@ -40,7 +40,7 @@ public class StatusService {
         RobotMode mode;
         if (!wifiConnected) {
             mode = RobotMode.offline;
-        } else if (latestEvent.isPresent() && !latestEvent.get().getIsExtinguished()) {
+        } else if (latestEvent.isPresent() && !Boolean.TRUE.equals(latestEvent.get().getIsExtinguished())) {
             // If the latest event is not extinguished, we are in fire_detected or extinguishing mode.
             // Since we don't have a specific field for pump status in Event, 
             // but Telemetry has pumpActive.
