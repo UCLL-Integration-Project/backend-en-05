@@ -63,12 +63,7 @@ public class EventController {
             @RequestParam(defaultValue = "0") int offset,
             HttpServletRequest request) {
 
-        // Accept session cookie or Bearer token
-        String token = AuthController.extractTokenFromCookie(request);
-        if (token == null && authorization != null && authorization.startsWith("Bearer ")) {
-            token = authorization.substring(7);
-        }
-
+        String token = AuthController.extractToken(request, authorization);
         if (token == null || userRepository.findByToken(token).isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

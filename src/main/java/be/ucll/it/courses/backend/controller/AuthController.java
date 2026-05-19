@@ -126,6 +126,14 @@ public class AuthController {
             .orElse(null);
     }
 
+    public static String extractToken(HttpServletRequest request, String authHeader) {
+        String token = extractTokenFromCookie(request);
+        if (token == null && authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return token;
+    }
+
     private boolean isLockedOut(String username) {
         Long until = lockoutUntil.get(username);
         if (until == null) return false;

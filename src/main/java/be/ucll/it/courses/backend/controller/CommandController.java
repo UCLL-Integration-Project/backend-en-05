@@ -25,14 +25,11 @@ public class CommandController {
     public ResponseEntity<?> sendCommand(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestHeader(value = "X-Role", required = false) String roleHeader,
-            @Valid @RequestBody CommandRequest request) {
+            @Valid @RequestBody CommandRequest request,
+            jakarta.servlet.http.HttpServletRequest servletRequest) {
 
-        // 401 Unauthorized
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String token = authHeader.substring(7);
-        if (userRepository.findByToken(token).isEmpty()) {
+        String token = AuthController.extractToken(servletRequest, authHeader);
+        if (token == null || userRepository.findByToken(token).isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
