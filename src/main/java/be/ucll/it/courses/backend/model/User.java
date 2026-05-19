@@ -26,14 +26,26 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    protected User(){}
+    @Column(name = "role")
+    private String role;
 
-    public User(String username, String firstName, String lastName, String token, String password){
+    public User(){}
+
+    public User(String username, String firstName, String lastName, String token, String password, String role){
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.token = token;
         this.password = password;
+        this.role = role;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public String getToken() {
