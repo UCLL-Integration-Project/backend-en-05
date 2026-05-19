@@ -27,6 +27,7 @@ public class MqttSubscriberService {
 
     @Bean
     @ServiceActivator(inputChannel = "mqttInputChannel")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "mqtt.enabled", havingValue = "true")
     public MessageHandler handler() {
         return message -> {
             try {

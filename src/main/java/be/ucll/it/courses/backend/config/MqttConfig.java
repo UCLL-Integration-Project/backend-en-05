@@ -37,6 +37,7 @@ public class MqttConfig {
 
     @Bean
     @org.springframework.context.annotation.Profile("!test")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "mqtt.enabled", havingValue = "true")
     public MessageProducer inbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter("backend-client", mqttClientFactory(), "robot/status");
