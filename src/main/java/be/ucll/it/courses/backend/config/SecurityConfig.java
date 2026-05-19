@@ -33,7 +33,7 @@ public class SecurityConfig {
                     "default-src 'self'; " +
                     "script-src 'self'; " +
                     "style-src 'self'; " +
-                    "connect-src 'self' ws: wss:; " +
+                    "connect-src 'self' ws: wss: https://backend-en-05-itip-en-05.apps.okd.ucll.cloud; " +
                     "img-src 'self'; " +
                     "font-src 'self'; " +
                     "object-src 'none'; " +
