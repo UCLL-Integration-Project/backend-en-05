@@ -35,7 +35,7 @@ public class Telemetry {
     private Short flameRight;
 
     @Column(name = "pump_active")
-    private Boolean pumpActive;
+    private Boolean pumpActive = false;
 
     @Column(name = "motor_left_pwm")
     private Short motorLeftPwm;

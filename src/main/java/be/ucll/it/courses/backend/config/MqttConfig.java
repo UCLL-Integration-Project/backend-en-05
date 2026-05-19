@@ -36,6 +36,7 @@ public class MqttConfig {
     }
 
     @Bean
+    @org.springframework.context.annotation.Profile("!test")
     public MessageProducer inbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter("backend-client", mqttClientFactory(), "robot/status");
