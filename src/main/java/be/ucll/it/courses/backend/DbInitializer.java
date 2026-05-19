@@ -40,9 +40,9 @@ public class DbInitializer {
             telemetryRepository.deleteAll();
 
             // Users
-            User admin = new User("admin", "Administrator", "System", "user-token-admin", passwordEncoder.encode("admin123"));
-            User user1 = new User("jdoe", "John", "Doe", "user-token-01", passwordEncoder.encode("password123"));
-            User user2 = new User("asmith", "Alice", "Smith", "user-token-02", passwordEncoder.encode("password123"));
+            User admin = new User("admin", "Administrator", "System", "user-token-admin", passwordEncoder.encode("admin123"), "ADMIN");
+            User user1 = new User("jdoe", "John", "Doe", "user-token-01", passwordEncoder.encode("password123"), "VIEWER");
+            User user2 = new User("asmith", "Alice", "Smith", "user-token-02", passwordEncoder.encode("password123"), "VIEWER");
             userRepository.saveAll(List.of(admin, user1, user2));
 
             // Devices
@@ -72,9 +72,9 @@ public class DbInitializer {
         userRepository.deleteAll();
         
         userRepository.saveAll(List.of(
-            new User("admin",  "Administrator", "",      "user-token-admin", passwordEncoder.encode("admin123")),
-            new User("jdoe",   "John",          "Doe",   "user-token-01",    passwordEncoder.encode("password123")),
-            new User("asmith", "Alice",         "Smith", "user-token-02",    passwordEncoder.encode("password123"))
+            new User("admin",  "Administrator", "",      "user-token-admin", passwordEncoder.encode("admin123"), "ADMIN"),
+            new User("jdoe",   "John",          "Doe",   "user-token-01",    passwordEncoder.encode("password123"), "VIEWER"),
+            new User("asmith", "Alice",         "Smith", "user-token-02",    passwordEncoder.encode("password123"), "VIEWER")
         ));
 
         deviceRepository.saveAll(List.of(
