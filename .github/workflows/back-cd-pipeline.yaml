@@ -78,7 +78,6 @@ jobs:
           # Wait for the rollout to complete
           oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=5m
 
-
   # deploy to the production, runs only on release tags
   deploy-to-production:
     if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
