@@ -76,7 +76,7 @@ jobs:
           oc apply -f k8s/backend/route.yaml
           
           # Wait for the rollout to complete
-          oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=5m
+          oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=10m
 
   # deploy to the production, runs only on release tags
   deploy-to-production:
@@ -143,4 +143,4 @@ jobs:
           oc apply -f k8s/backend/route.yaml
           
           # Wait for the rollout to complete
-          oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=5m
+          oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=10m
