@@ -53,7 +53,9 @@ jobs:
           provenance: false
 
       - name: Install OpenShift CLI
-        uses: redhat-actions/openshift-cli-installer@v1
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: "latest"
 
       - name: Log in to OpenShift
         uses: redhat-actions/oc-login@v1
@@ -117,3 +119,29 @@ jobs:
             ${{ env.IMAGE_LOWER }}:prod
             ${{ env.IMAGE_LOWER }}:${{ github.event.workflow_run.head_branch }}
           provenance: false
+
+      - name: Install OpenShift CLI
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: "latest"
+
+      - name: Log in to OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server: ${{ secrets.OPENSHIFT_SERVER }}
+          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          insecure_skip_tls_verify: true
+          namespace: itip-en-05
+
+      - name: Deploy to OpenShift
+        run: |
+          # Update the deployment manifest with the production tag
+          sed -i "s|image: .*|image: ${{ env.IMAGE_LOWER }}:${{ github.event.workflow_run.head_branch }}|g" k8s/backend/deployment.yaml
+          
+          oc apply -f k8s/backend/imagestream.yaml
+          oc apply -f k8s/backend/service.yaml
+          oc apply -f k8s/backend/deployment.yaml
+          oc apply -f k8s/backend/route.yaml
+          
+          # Wait for the rollout to complete
+          oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=5m
