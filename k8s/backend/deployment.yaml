@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-en-05
+  namespace: itip-en-05
+  labels:
+    app: backend-en-05
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-en-05
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: backend-en-05
+    spec:
+      containers:
+      - name: backend-en-05
+        image: ghcr.io/ucll-integration-project/backend-en-05:staging
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /v1/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /v1/health
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        env:
+        - name: DB_HOST
+          value: postgresql
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: database-name
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: database-user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: database-password

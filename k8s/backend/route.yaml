@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: backend-en-05
+  namespace: itip-en-05
+  labels:
+    app: backend-en-05
+spec:
+  to:
+    kind: Service
+    name: backend-en-05
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

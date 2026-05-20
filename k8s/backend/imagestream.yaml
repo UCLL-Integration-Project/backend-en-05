@@ -1,0 +1,23 @@
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: backend-en-05
+  namespace: itip-en-05
+  labels:
+    app: backend-en-05
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - name: staging
+      from:
+        kind: DockerImage
+        name: ghcr.io/ucll-integration-project/backend-en-05:staging
+      importPolicy:
+        scheduled: true
+    - name: prod
+      from:
+        kind: DockerImage
+        name: ghcr.io/ucll-integration-project/backend-en-05:prod
+      importPolicy:
+        scheduled: true
