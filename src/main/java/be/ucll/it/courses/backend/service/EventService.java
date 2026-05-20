@@ -61,6 +61,10 @@ public class EventService {
         return eventRepository.findAll();
     }
 
+    public void deleteAllEvents() {
+        eventRepository.deleteAll();
+    }
+
     public EventResponse createEvent(EventRequest request, String deviceId) {
         Event event = new Event();
         event.setTimestamp(request.timestamp());

@@ -91,6 +91,20 @@ public class EventController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping
+    public ResponseEntity<Void> deleteEvents(
+            @RequestHeader(value = "Authorization", required = false) String authorization,
+            HttpServletRequest request) {
+
+        String token = AuthController.extractToken(request, authorization);
+        if (token == null || userRepository.findByToken(token).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        eventService.deleteAllEvents();
+        return ResponseEntity.noContent().build();
+    }
+
     // Keep old endpoint for simple fetch if needed, or remove if fully migrating
     @GetMapping("/all")
     public List<be.ucll.it.courses.backend.model.Event> getAllEvents() {
