@@ -61,6 +61,7 @@ public class EventController {
             @RequestParam(required = false) String to,
             @RequestParam(defaultValue = "50") int limit,
             @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(required = false) String event_type,
             HttpServletRequest request) {
 
         String token = AuthController.extractToken(request, authorization);
@@ -68,7 +69,6 @@ public class EventController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // Limit validation
         if (limit > 200) {
             limit = 200;
         }
@@ -87,7 +87,7 @@ public class EventController {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
 
-        EventListResponse response = eventService.getEvents(fromDate, toDate, limit, offset);
+        EventListResponse response = eventService.getEvents(fromDate, toDate, limit, offset, event_type);
         return ResponseEntity.ok(response);
     }
 
