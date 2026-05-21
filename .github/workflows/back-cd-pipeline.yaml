@@ -71,6 +71,9 @@ jobs:
           sed -i "s|image: .*|image: ${{ env.IMAGE_LOWER }}:${{ github.event.workflow_run.head_sha }}|g" k8s/backend/deployment.yaml
           
           oc apply -f k8s/backend/imagestream.yaml
+          # Force OKD to import the image from GHCR immediately
+          oc import-image backend-en-05:staging --from=${{ env.IMAGE_LOWER }}:staging --confirm
+          
           oc apply -f k8s/backend/service.yaml
           oc apply -f k8s/backend/deployment.yaml
           oc apply -f k8s/backend/route.yaml
@@ -138,6 +141,9 @@ jobs:
           sed -i "s|image: .*|image: ${{ env.IMAGE_LOWER }}:${{ github.event.workflow_run.head_branch }}|g" k8s/backend/deployment.yaml
           
           oc apply -f k8s/backend/imagestream.yaml
+          # Force OKD to import the image from GHCR immediately
+          oc import-image backend-en-05:prod --from=${{ env.IMAGE_LOWER }}:prod --confirm
+          
           oc apply -f k8s/backend/service.yaml
           oc apply -f k8s/backend/deployment.yaml
           oc apply -f k8s/backend/route.yaml
