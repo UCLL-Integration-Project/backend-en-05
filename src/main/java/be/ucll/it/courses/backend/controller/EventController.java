@@ -5,7 +5,6 @@ import be.ucll.it.courses.backend.controller.dto.EventRequest;
 import be.ucll.it.courses.backend.controller.dto.EventListResponse;
 import be.ucll.it.courses.backend.controller.dto.EventResponse;
 import be.ucll.it.courses.backend.service.EventService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,15 +21,12 @@ public class EventController {
 
     private final EventService eventService;
     private final be.ucll.it.courses.backend.repository.DeviceRepository deviceRepository;
-    private final be.ucll.it.courses.backend.repository.UserRepository userRepository;
 
     @Autowired
-    public EventController(EventService eventService, 
-                           be.ucll.it.courses.backend.repository.DeviceRepository deviceRepository,
-                           be.ucll.it.courses.backend.repository.UserRepository userRepository) {
+    public EventController(EventService eventService,
+                           be.ucll.it.courses.backend.repository.DeviceRepository deviceRepository) {
         this.eventService = eventService;
         this.deviceRepository = deviceRepository;
-        this.userRepository = userRepository;
     }
 
     @PostMapping
@@ -45,7 +41,6 @@ public class EventController {
 
         String token = authorization.substring(7);
 
-        // Validate Device ID and Token against DB
         var device = deviceRepository.findByDeviceIdAndDeviceToken(deviceId, token);
         if (device.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -58,18 +53,11 @@ public class EventController {
 
     @GetMapping
     public ResponseEntity<EventListResponse> getEvents(
-            @RequestHeader(value = "Authorization", required = false) String authorization,
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to,
             @RequestParam(defaultValue = "50") int limit,
             @RequestParam(defaultValue = "0") int offset,
-            @RequestParam(required = false) String event_type,
-            HttpServletRequest request) {
-
-        String token = AuthController.extractToken(request, authorization);
-        if (token == null || userRepository.findByToken(token).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+            @RequestParam(required = false) String event_type) {
 
         if (limit > 200) {
             limit = 200;
@@ -94,23 +82,13 @@ public class EventController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> deleteEvents(
-            @RequestHeader(value = "Authorization", required = false) String authorization,
-            HttpServletRequest request) {
-
-        String token = AuthController.extractToken(request, authorization);
-        if (token == null || userRepository.findByToken(token).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
+    public ResponseEntity<Void> deleteEvents() {
         eventService.deleteAllEvents();
         return ResponseEntity.noContent().build();
     }
 
-    // Keep old endpoint for simple fetch if needed, or remove if fully migrating
     @GetMapping("/all")
     public List<be.ucll.it.courses.backend.model.Event> getAllEvents() {
         return eventService.getAllEvents();
     }
 }
-
