@@ -77,6 +77,11 @@ jobs:
           oc apply -f k8s/backend/service.yaml
           oc apply -f k8s/backend/deployment.yaml
           oc apply -f k8s/backend/route.yaml
+
+          # Apply backup configurations
+          oc apply -f k8s/backup/pvc.yaml
+          oc apply -f k8s/backup/configmap.yaml
+          oc apply -f k8s/backup/cronjob.yaml
           
           # Wait for the rollout to complete
           oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=10m
@@ -147,6 +152,11 @@ jobs:
           oc apply -f k8s/backend/service.yaml
           oc apply -f k8s/backend/deployment.yaml
           oc apply -f k8s/backend/route.yaml
+
+          # Apply backup configurations
+          oc apply -f k8s/backup/pvc.yaml
+          oc apply -f k8s/backup/configmap.yaml
+          oc apply -f k8s/backup/cronjob.yaml
           
           # Wait for the rollout to complete
           oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=10m
