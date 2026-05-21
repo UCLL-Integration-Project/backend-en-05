@@ -9,5 +9,6 @@ public record EventListItemResponse(
     Float temperature,
     Short battery_pct,
     Integer duration_s,
-    Boolean is_extinguished
+    Boolean is_extinguished,
+    String event_type
 ) {}

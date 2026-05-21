@@ -9,5 +9,7 @@ public record RobotStatusResponse(
     Short battery_pct,
     Boolean wifi_connected,
     OffsetDateTime last_seen,
-    UUID last_event_id
+    UUID last_event_id,
+    Short water_level_pct,
+    Boolean water_warning
 ) {}
