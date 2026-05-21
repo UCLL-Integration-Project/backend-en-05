@@ -2,18 +2,20 @@ CREATE TABLE IF NOT EXISTS users (
     id         BIGSERIAL    PRIMARY KEY,
     username   VARCHAR(255) UNIQUE,
     first_name VARCHAR(255),
-    last_name  VARCHAR(255)
+    last_name  VARCHAR(255),
+    token      VARCHAR(255),
+    password   VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS devices (
-    device_id    VARCHAR(255) PRIMARY KEY,
-    device_token VARCHAR(255),
-    name         VARCHAR(255)
+    device_id     VARCHAR(255) PRIMARY KEY,
+    device_token  VARCHAR(255) NOT NULL,
+    name          VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS telemetry (
     id               BIGSERIAL    PRIMARY KEY,
-    time             TIMESTAMP WITH TIME ZONE  NOT NULL DEFAULT NOW(),
+    time             TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     battery_voltage  REAL,
     temperature_c    REAL,
     flame_left       SMALLINT,
