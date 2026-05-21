@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,12 +80,13 @@ public class AuthController {
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        return ResponseEntity.ok(Map.of(
-            "username", user.getUsername(),
-            "firstName", user.getFirstName(),
-            "lastName", user.getLastName(),
-            "token", user.getToken()
-        ));
+        Map<String, Object> body = new HashMap<>();
+        body.put("username", user.getUsername());
+        body.put("firstName", user.getFirstName());
+        body.put("lastName", user.getLastName());
+        body.put("token", user.getToken());
+
+        return ResponseEntity.ok(body);
     }
 
     @PostMapping("/logout")
