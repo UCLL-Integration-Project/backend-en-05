@@ -3,6 +3,8 @@ kind: CronJob
 metadata:
   name: database-backup
   namespace: itip-en-05
+  labels:
+    app.kubernetes.io/part-of: frontend-en-05
 spec:
   schedule: "0 */6 * * *"
   concurrencyPolicy: Forbid

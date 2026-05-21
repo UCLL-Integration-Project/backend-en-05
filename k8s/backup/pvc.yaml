@@ -3,6 +3,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: database-backup-pvc
   namespace: itip-en-05
+  labels:
+    app.kubernetes.io/part-of: frontend-en-05
 spec:
   accessModes:
     - ReadWriteOnce
