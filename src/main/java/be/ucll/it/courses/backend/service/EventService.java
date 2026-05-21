@@ -1,5 +1,6 @@
 package be.ucll.it.courses.backend.service;
 
+import be.ucll.it.courses.backend.controller.dto.CreateEventResult;
 import be.ucll.it.courses.backend.controller.dto.EventListItemResponse;
 import be.ucll.it.courses.backend.controller.dto.EventListResponse;
 import be.ucll.it.courses.backend.controller.dto.EventRequest;
@@ -7,6 +8,7 @@ import be.ucll.it.courses.backend.controller.dto.EventResponse;
 import be.ucll.it.courses.backend.model.Event;
 import be.ucll.it.courses.backend.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +26,9 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final SimpMessagingTemplate messagingTemplate;
+
+    @Value("${app.deduplication.window-seconds:5}")
+    private long deduplicationWindowSeconds;
 
     @Autowired
     public EventService(EventRepository eventRepository, SimpMessagingTemplate messagingTemplate) {
@@ -69,7 +75,15 @@ public class EventService {
         eventRepository.deleteAll();
     }
 
-    public EventResponse createEvent(EventRequest request, String deviceId) {
+    public CreateEventResult createEvent(EventRequest request, String deviceId) {
+        OffsetDateTime windowStart = request.timestamp().minusSeconds(deduplicationWindowSeconds);
+        OffsetDateTime windowEnd = request.timestamp().plusSeconds(deduplicationWindowSeconds);
+
+        Optional<Event> existing = eventRepository.findFirstByDeviceIdAndTimestampBetween(deviceId, windowStart, windowEnd);
+        if (existing.isPresent()) {
+            return new CreateEventResult(new EventResponse(existing.get().getIncidentId(), "duplicate"), false);
+        }
+
         Event event = new Event();
         event.setTimestamp(request.timestamp());
         event.setTemperature(request.temperature());
@@ -91,6 +105,6 @@ public class EventService {
             savedEvent.getEventType()
         ));
 
-        return new EventResponse(savedEvent.getIncidentId(), "created");
+        return new CreateEventResult(new EventResponse(savedEvent.getIncidentId(), "created"), true);
     }
 }

@@ -1,5 +1,6 @@
 package be.ucll.it.courses.backend.controller;
 
+import be.ucll.it.courses.backend.controller.dto.CreateEventResult;
 import be.ucll.it.courses.backend.controller.dto.EventRequest;
 import be.ucll.it.courses.backend.controller.dto.EventListResponse;
 import be.ucll.it.courses.backend.controller.dto.EventResponse;
@@ -50,8 +51,9 @@ public class EventController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        EventResponse response = eventService.createEvent(request, deviceId);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        CreateEventResult result = eventService.createEvent(request, deviceId);
+        HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
+        return new ResponseEntity<>(result.response(), status);
     }
 
     @GetMapping
