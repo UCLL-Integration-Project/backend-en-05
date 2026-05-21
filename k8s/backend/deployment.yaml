@@ -7,6 +7,7 @@ metadata:
     app: backend-en-05
 spec:
   replicas: 1
+  progressDeadlineSeconds: 600
   selector:
     matchLabels:
       app: backend-en-05
@@ -28,23 +29,31 @@ spec:
         resources:
           requests:
             cpu: 100m
-            memory: 256Mi
+            memory: 384Mi
           limits:
             cpu: 500m
-            memory: 512Mi
+            memory: 768Mi
+        startupProbe:
+          httpGet:
+            path: /v1/health
+            port: 8080
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          failureThreshold: 12
         livenessProbe:
           httpGet:
             path: /v1/health
             port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 0
+          periodSeconds: 15
           failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /v1/health
             port: 8080
-          initialDelaySeconds: 15
+          initialDelaySeconds: 0
           periodSeconds: 10
+          failureThreshold: 3
         env:
         - name: DB_HOST
           value: postgresql
