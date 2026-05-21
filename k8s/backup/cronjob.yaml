@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: database-backup
+  namespace: itip-en-05
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup-worker
+            image: postgres:15-alpine
+            command: ["/bin/bash", "/scripts/backup.sh"]
+            env:
+            - name: DB_HOST
+              value: postgresql
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: database-name
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: database-user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: database-password
+            volumeMounts:
+            - name: backup-volume
+              mountPath: /backups
+            - name: script-volume
+              mountPath: /scripts
+          restartPolicy: OnFailure
+          volumes:
+          - name: backup-volume
+            persistentVolumeClaim:
+              claimName: database-backup-pvc
+          - name: script-volume
+            configMap:
+              name: database-backup-script
+              defaultMode: 0755
