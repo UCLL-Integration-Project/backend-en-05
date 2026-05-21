@@ -69,14 +69,53 @@ jobs:
         run: |
           # Update the deployment manifest with the specific image SHA to ensure a rolling update
           sed -i "s|image: .*|image: ${{ env.IMAGE_LOWER }}:${{ github.event.workflow_run.head_sha }}|g" k8s/backend/deployment.yaml
-          
+
           oc apply -f k8s/backend/imagestream.yaml
           oc apply -f k8s/backend/service.yaml
           oc apply -f k8s/backend/deployment.yaml
           oc apply -f k8s/backend/route.yaml
-          
+
           # Wait for the rollout to complete
           oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=10m
+
+      - name: Smoke Test
+        id: smoke-test
+        run: |
+          ROUTE_HOST=$(oc get route backend-en-05 -n itip-en-05 -o jsonpath='{.spec.host}')
+          HEALTH_URL="https://${ROUTE_HOST}/v1/health"
+          TIMEOUT=30
+          START_TIME=$(date +%s)
+          SUCCESS=false
+
+          echo "Running smoke test against: ${HEALTH_URL}"
+          while [ $(( $(date +%s) - START_TIME )) -lt $TIMEOUT ]; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "${HEALTH_URL}" 2>/dev/null || echo "000")
+            echo "Health check status: ${HTTP_STATUS}"
+            if [ "$HTTP_STATUS" = "200" ]; then
+              SUCCESS=true
+              break
+            fi
+            sleep 2
+          done
+
+          echo "## Smoke Test Result (Staging)" >> $GITHUB_STEP_SUMMARY
+          echo "**Endpoint:** \`${HEALTH_URL}\`" >> $GITHUB_STEP_SUMMARY
+          if [ "$SUCCESS" = "true" ]; then
+            echo "**Result:** PASSED - \`GET /v1/health\` returned 200 OK" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Result:** FAILED - \`GET /v1/health\` did not return 200 within ${TIMEOUT} seconds" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Automatic Rollback on Failed Smoke Test
+        if: failure() && steps.smoke-test.outcome == 'failure'
+        run: |
+          echo "Smoke test failed — rolling back staging deployment"
+          oc rollout undo deployment/backend-en-05 -n itip-en-05
+          oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=5m
+
+          echo "## Automatic Rollback (Staging)" >> $GITHUB_STEP_SUMMARY
+          echo "Smoke test failed. Deployment has been automatically rolled back to the previous revision." >> $GITHUB_STEP_SUMMARY
 
   # deploy to the production, runs only on release tags
   deploy-to-production:
@@ -136,11 +175,50 @@ jobs:
         run: |
           # Update the deployment manifest with the production tag
           sed -i "s|image: .*|image: ${{ env.IMAGE_LOWER }}:${{ github.event.workflow_run.head_branch }}|g" k8s/backend/deployment.yaml
-          
+
           oc apply -f k8s/backend/imagestream.yaml
           oc apply -f k8s/backend/service.yaml
           oc apply -f k8s/backend/deployment.yaml
           oc apply -f k8s/backend/route.yaml
-          
+
           # Wait for the rollout to complete
           oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=10m
+
+      - name: Smoke Test
+        id: smoke-test
+        run: |
+          ROUTE_HOST=$(oc get route backend-en-05 -n itip-en-05 -o jsonpath='{.spec.host}')
+          HEALTH_URL="https://${ROUTE_HOST}/v1/health"
+          TIMEOUT=30
+          START_TIME=$(date +%s)
+          SUCCESS=false
+
+          echo "Running smoke test against: ${HEALTH_URL}"
+          while [ $(( $(date +%s) - START_TIME )) -lt $TIMEOUT ]; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "${HEALTH_URL}" 2>/dev/null || echo "000")
+            echo "Health check status: ${HTTP_STATUS}"
+            if [ "$HTTP_STATUS" = "200" ]; then
+              SUCCESS=true
+              break
+            fi
+            sleep 2
+          done
+
+          echo "## Smoke Test Result (Production)" >> $GITHUB_STEP_SUMMARY
+          echo "**Endpoint:** \`${HEALTH_URL}\`" >> $GITHUB_STEP_SUMMARY
+          if [ "$SUCCESS" = "true" ]; then
+            echo "**Result:** PASSED - \`GET /v1/health\` returned 200 OK" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Result:** FAILED - \`GET /v1/health\` did not return 200 within ${TIMEOUT} seconds" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Automatic Rollback on Failed Smoke Test
+        if: failure() && steps.smoke-test.outcome == 'failure'
+        run: |
+          echo "Smoke test failed — rolling back production deployment"
+          oc rollout undo deployment/backend-en-05 -n itip-en-05
+          oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=5m
+
+          echo "## Automatic Rollback (Production)" >> $GITHUB_STEP_SUMMARY
+          echo "Smoke test failed. Deployment has been automatically rolled back to the previous revision." >> $GITHUB_STEP_SUMMARY
