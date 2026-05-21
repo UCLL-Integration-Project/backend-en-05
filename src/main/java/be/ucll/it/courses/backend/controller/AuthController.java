@@ -110,12 +110,14 @@ public class AuthController {
         }
 
         return userRepository.findByToken(token)
-            .<ResponseEntity<?>>map(user -> ResponseEntity.ok(Map.of(
-                "username", user.getUsername(),
-                "firstName", user.getFirstName(),
-                "lastName", user.getLastName(),
-                "token", user.getToken()
-            )))
+            .<ResponseEntity<?>>map(user -> {
+                Map<String, Object> body = new HashMap<>();
+                body.put("username", user.getUsername());
+                body.put("firstName", user.getFirstName());
+                body.put("lastName", user.getLastName());
+                body.put("token", user.getToken());
+                return ResponseEntity.ok(body);
+            })
             .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Session invalid.")));
     }
 
