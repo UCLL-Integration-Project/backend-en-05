@@ -36,6 +36,9 @@ public class Event {
     @Column(name = "device_id")
     private String deviceId;
 
+    @Column(name = "event_type")
+    private String eventType;
+
     public Event() {}
 
     public UUID getIncidentId() { return incidentId; }
@@ -58,4 +61,7 @@ public class Event {
 
     public String getDeviceId() { return deviceId; }
     public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
+
+    public String getEventType() { return eventType; }
+    public void setEventType(String eventType) { this.eventType = eventType; }
 }

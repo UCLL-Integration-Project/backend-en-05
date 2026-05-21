@@ -43,6 +43,9 @@ public class Telemetry {
     @Column(name = "motor_right_pwm")
     private Short motorRightPwm;
 
+    @Column(name = "water_level_pct")
+    private Short waterLevelPct;
+
     public Telemetry() {}
 
     public Long getId() { return id; }
@@ -74,4 +77,7 @@ public class Telemetry {
 
     public Short getMotorRightPwm() { return motorRightPwm; }
     public void setMotorRightPwm(Short motorRightPwm) { this.motorRightPwm = motorRightPwm; }
+
+    public Short getWaterLevelPct() { return waterLevelPct; }
+    public void setWaterLevelPct(Short waterLevelPct) { this.waterLevelPct = waterLevelPct; }
 }

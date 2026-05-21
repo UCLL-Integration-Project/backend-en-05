@@ -30,7 +30,7 @@ public class EventService {
         this.messagingTemplate = messagingTemplate;
     }
 
-    public EventListResponse getEvents(OffsetDateTime from, OffsetDateTime to, int limit, int offset) {
+    public EventListResponse getEvents(OffsetDateTime from, OffsetDateTime to, int limit, int offset, String eventType) {
         Specification<Event> spec = Specification.where(null);
 
         if (from != null) {
@@ -38,6 +38,9 @@ public class EventService {
         }
         if (to != null) {
             spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("timestamp"), to));
+        }
+        if (eventType != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("eventType"), eventType));
         }
 
         int page = offset / limit;
@@ -50,7 +53,8 @@ public class EventService {
                 e.getTemperature(),
                 e.getBatteryPct(),
                 e.getDurationS(),
-                e.getIsExtinguished()
+                e.getIsExtinguished(),
+                e.getEventType()
             ))
             .collect(Collectors.toList());
 
@@ -73,17 +77,18 @@ public class EventService {
         event.setDurationS(request.duration_s());
         event.setIsExtinguished(request.is_extinguished());
         event.setDeviceId(deviceId);
+        event.setEventType(request.event_type());
 
         Event savedEvent = eventRepository.save(event);
 
-        // Broadcast to all dashboard clients in real time
         messagingTemplate.convertAndSend("/topic/events", new EventListItemResponse(
             savedEvent.getIncidentId(),
             savedEvent.getTimestamp(),
             savedEvent.getTemperature(),
             savedEvent.getBatteryPct(),
             savedEvent.getDurationS(),
-            savedEvent.getIsExtinguished()
+            savedEvent.getIsExtinguished(),
+            savedEvent.getEventType()
         ));
 
         return new EventResponse(savedEvent.getIncidentId(), "created");

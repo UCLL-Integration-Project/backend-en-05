@@ -57,14 +57,18 @@ public class StatusService {
         if (latestEvent.isPresent() && latestEvent.get().getBatteryPct() != null) {
             batteryPct = latestEvent.get().getBatteryPct();
         }
-        // Alternatively, use telemetry voltage if we had a mapping.
+
+        Short waterLevelPct = telemetry.getWaterLevelPct();
+        boolean waterWarning = waterLevelPct != null && waterLevelPct < 20;
 
         return Optional.of(new RobotStatusResponse(
             mode,
             batteryPct,
             wifiConnected,
             lastSeen,
-            latestEvent.map(Event::getIncidentId).orElse(null)
+            latestEvent.map(Event::getIncidentId).orElse(null),
+            waterLevelPct,
+            waterWarning
         ));
     }
 }

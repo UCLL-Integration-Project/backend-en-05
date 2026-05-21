@@ -41,7 +41,8 @@ class EventServiceTest {
             25.0f,
             (short) 80,
             10,
-            true
+            true,
+            "fire"
         );
         String deviceId = "test-device";
         UUID incidentId = UUID.randomUUID();
