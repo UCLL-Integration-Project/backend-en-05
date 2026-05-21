@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -34,6 +35,9 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/v1/health").permitAll()
+                .requestMatchers(HttpMethod.POST, "/v1/events").permitAll()
+                .requestMatchers(HttpMethod.POST, "/v1/telemetry").permitAll()
+                .requestMatchers(HttpMethod.POST, "/v1/robot/heartbeat").permitAll()
                 .requestMatchers("/v1/command").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )

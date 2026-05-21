@@ -45,10 +45,9 @@ public class MqttIntegrationTest extends BaseIntegrationTest {
     void setUp() {
         eventRepository.deleteAll();
         userRepository.deleteAll();
-        userToken = UUID.randomUUID().toString();
         User user = new User();
         user.setUsername("testuser");
-        user.setToken(userToken);
+        user.setRole("ADMIN");
         userRepository.save(user);
     }
 

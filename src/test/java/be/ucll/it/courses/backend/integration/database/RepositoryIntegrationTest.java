@@ -16,13 +16,13 @@ public class RepositoryIntegrationTest extends BaseIntegrationTest {
     private UserRepository userRepository;
 
     @Test
-    void findByTokenReturnsUser() {
+    void findByUsernameReturnsUser() {
         User user = new User();
         user.setUsername("dbtest");
-        user.setToken("secret-token");
+        user.setRole("VIEWER");
         userRepository.save(user);
 
-        Optional<User> found = userRepository.findByToken("secret-token");
+        Optional<User> found = userRepository.findByUsername("dbtest");
 
         assertThat(found).isPresent();
         assertThat(found.get().getUsername()).isEqualTo("dbtest");

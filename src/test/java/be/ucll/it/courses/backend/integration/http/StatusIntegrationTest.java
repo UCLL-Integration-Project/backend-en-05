@@ -2,9 +2,6 @@ package be.ucll.it.courses.backend.integration.http;
 
 import be.ucll.it.courses.backend.integration.BaseIntegrationTest;
 import be.ucll.it.courses.backend.model.Telemetry;
-import be.ucll.it.courses.backend.model.User;
-import be.ucll.it.courses.backend.repository.TelemetryRepository;
-import be.ucll.it.courses.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +9,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,11 +16,6 @@ public class StatusIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    private String adminToken;
 
     @Autowired
     private be.ucll.it.courses.backend.repository.EventRepository eventRepository;
@@ -36,26 +27,18 @@ public class StatusIntegrationTest extends BaseIntegrationTest {
     void setUp() {
         eventRepository.deleteAll();
         telemetryRepository.deleteAll();
-        userRepository.deleteAll();
-        adminToken = UUID.randomUUID().toString();
-        User admin = new User();
-        admin.setUsername("admin");
-        admin.setToken(adminToken);
-        admin.setRole("ADMIN");
-        userRepository.save(admin);
     }
 
     @Test
     void getStatusReturnsLatestRobotState() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(adminToken);
+        headers.setBearerAuth("ADMIN");
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = restTemplate.exchange("/v1/status", HttpMethod.GET, entity, String.class);
 
-        // This might return 404 if no robot has connected yet, but the test ensures the endpoint works
         assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NOT_FOUND);
-        
+
         if (response.getStatusCode() == HttpStatus.OK) {
             assertThat(response.getBody()).contains("mode");
             assertThat(response.getBody()).contains("battery_pct");
@@ -71,14 +54,13 @@ public class StatusIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void getStatusIncludesWaterLevelAndWarningFields() {
-        // Save telemetry with a water level below 20% to trigger water_warning=true
         Telemetry telemetry = new Telemetry();
         telemetry.setTime(OffsetDateTime.now());
         telemetry.setWaterLevelPct((short) 10);
         telemetryRepository.save(telemetry);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(adminToken);
+        headers.setBearerAuth("ADMIN");
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = restTemplate.exchange("/v1/status", HttpMethod.GET, entity, String.class);
@@ -97,7 +79,7 @@ public class StatusIntegrationTest extends BaseIntegrationTest {
         telemetryRepository.save(telemetry);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(adminToken);
+        headers.setBearerAuth("ADMIN");
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = restTemplate.exchange("/v1/status", HttpMethod.GET, entity, String.class);
