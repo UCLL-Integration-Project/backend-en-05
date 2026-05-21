@@ -74,7 +74,8 @@ public class EventIntegrationTest extends BaseIntegrationTest {
         Map<String, Object> body = Map.of(
             "timestamp", OffsetDateTime.now().toString(),
             "temperature", 25.5,
-            "battery_pct", 85
+            "battery_pct", 85,
+            "water_level_pct", 50
         );
         
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);

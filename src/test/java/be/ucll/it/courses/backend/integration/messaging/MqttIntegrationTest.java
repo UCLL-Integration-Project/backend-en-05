@@ -38,8 +38,12 @@ public class MqttIntegrationTest extends BaseIntegrationTest {
 
     private String userToken;
 
+    @Autowired
+    private be.ucll.it.courses.backend.repository.EventRepository eventRepository;
+
     @BeforeEach
     void setUp() {
+        eventRepository.deleteAll();
         userRepository.deleteAll();
         userToken = UUID.randomUUID().toString();
         User user = new User();

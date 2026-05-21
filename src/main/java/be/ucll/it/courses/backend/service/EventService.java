@@ -26,6 +26,7 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private boolean lowWaterAlertActive = false;
 
     @Value("${app.deduplication.window-seconds:5}")
     private long deduplicationWindowSeconds;
@@ -60,7 +61,8 @@ public class EventService {
                 e.getBatteryPct(),
                 e.getDurationS(),
                 e.getIsExtinguished(),
-                e.getEventType()
+                e.getEventType(),
+                e.getWaterLevelPct()
             ))
             .collect(Collectors.toList());
 
@@ -90,6 +92,7 @@ public class EventService {
         event.setBatteryPct(request.battery_pct());
         event.setDurationS(request.duration_s());
         event.setIsExtinguished(request.is_extinguished());
+        event.setWaterLevelPct(request.water_level_pct());
         event.setDeviceId(deviceId);
         event.setEventType(request.event_type());
 
@@ -102,8 +105,24 @@ public class EventService {
             savedEvent.getBatteryPct(),
             savedEvent.getDurationS(),
             savedEvent.getIsExtinguished(),
-            savedEvent.getEventType()
+            savedEvent.getEventType(),
+            savedEvent.getWaterLevelPct()
         ));
+
+        // Low Water Alert Logic
+        if ("low_water".equals(request.event_type()) && !lowWaterAlertActive) {
+            lowWaterAlertActive = true;
+            java.util.Map<String, Object> alert = new java.util.HashMap<>();
+            alert.put("type", "low_water_warning");
+            alert.put("water_level_pct", request.water_level_pct());
+            alert.put("timestamp", request.timestamp().toString());
+            messagingTemplate.convertAndSend("/topic/alerts", alert);
+        } else if (lowWaterAlertActive && request.water_level_pct() != null && request.water_level_pct() > 25) {
+            lowWaterAlertActive = false;
+            messagingTemplate.convertAndSend("/topic/alerts", java.util.Map.of(
+                "type", "low_water_cleared"
+            ));
+        }
 
         return new CreateEventResult(new EventResponse(savedEvent.getIncidentId(), "created"), true);
     }

@@ -18,6 +18,10 @@ public record EventRequest(
     @Max(value = 100, message = "Battery percentage must be at most 100")
     Short battery_pct,
 
+    @Min(value = 0, message = "Water level percentage must be at least 0")
+    @Max(value = 100, message = "Water level percentage must be at most 100")
+    Short water_level_pct,
+
     Integer duration_s,
 
     Boolean is_extinguished,

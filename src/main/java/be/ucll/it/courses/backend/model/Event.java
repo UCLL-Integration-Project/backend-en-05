@@ -33,6 +33,9 @@ public class Event {
     @Column(name = "is_extinguished")
     private Boolean isExtinguished;
 
+    @Column(name = "water_level_pct")
+    private Short waterLevelPct;
+
     @Column(name = "device_id")
     private String deviceId;
 
@@ -58,6 +61,9 @@ public class Event {
 
     public Boolean getIsExtinguished() { return isExtinguished; }
     public void setIsExtinguished(Boolean isExtinguished) { this.isExtinguished = isExtinguished; }
+
+    public Short getWaterLevelPct() { return waterLevelPct; }
+    public void setWaterLevelPct(Short waterLevelPct) { this.waterLevelPct = waterLevelPct; }
 
     public String getDeviceId() { return deviceId; }
     public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
