@@ -46,6 +46,7 @@ spec:
             port: 8080
           initialDelaySeconds: 0
           periodSeconds: 15
+          timeoutSeconds: 5
           failureThreshold: 3
         readinessProbe:
           httpGet:
@@ -53,6 +54,8 @@ spec:
             port: 8080
           initialDelaySeconds: 0
           periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
           failureThreshold: 3
         env:
         - name: DB_HOST
