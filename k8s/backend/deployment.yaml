@@ -28,7 +28,7 @@ spec:
         - containerPort: 8080
         resources:
           requests:
-            cpu: 100m
+            cpu: 200m
             memory: 384Mi
           limits:
             cpu: 500m
@@ -37,15 +37,15 @@ spec:
           httpGet:
             path: /v1/health
             port: 8080
-          initialDelaySeconds: 20
+          initialDelaySeconds: 30
           periodSeconds: 10
-          failureThreshold: 12
+          failureThreshold: 30
         livenessProbe:
           httpGet:
             path: /v1/health
             port: 8080
           initialDelaySeconds: 0
-          periodSeconds: 15
+          periodSeconds: 20
           timeoutSeconds: 5
           failureThreshold: 3
         readinessProbe:
@@ -53,7 +53,7 @@ spec:
             path: /v1/health
             port: 8080
           initialDelaySeconds: 0
-          periodSeconds: 10
+          periodSeconds: 15
           timeoutSeconds: 5
           successThreshold: 1
           failureThreshold: 3
