@@ -13,7 +13,7 @@ spec:
           containers:
           - name: backup-worker
             image: postgres:15-alpine
-            command: ["/bin/bash", "/scripts/backup.sh"]
+            command: ["/bin/sh", "/scripts/backup.sh"]
             env:
             - name: DB_HOST
               value: postgresql
