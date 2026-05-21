@@ -3,6 +3,7 @@ package be.ucll.it.courses.backend.controller.dto;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.time.OffsetDateTime;
 
 public record EventRequest(
@@ -19,5 +20,8 @@ public record EventRequest(
 
     Integer duration_s,
 
-    Boolean is_extinguished
+    Boolean is_extinguished,
+
+    @Pattern(regexp = "fire|low_water", message = "event_type must be 'fire' or 'low_water'")
+    String event_type
 ) {}

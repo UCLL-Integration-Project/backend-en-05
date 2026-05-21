@@ -1,5 +1,6 @@
 package be.ucll.it.courses.backend.controller;
 
+import be.ucll.it.courses.backend.controller.dto.CreateEventResult;
 import be.ucll.it.courses.backend.controller.dto.EventRequest;
 import be.ucll.it.courses.backend.controller.dto.EventListResponse;
 import be.ucll.it.courses.backend.controller.dto.EventResponse;
@@ -50,8 +51,9 @@ public class EventController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        EventResponse response = eventService.createEvent(request, deviceId);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        CreateEventResult result = eventService.createEvent(request, deviceId);
+        HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
+        return new ResponseEntity<>(result.response(), status);
     }
 
     @GetMapping
@@ -61,6 +63,7 @@ public class EventController {
             @RequestParam(required = false) String to,
             @RequestParam(defaultValue = "50") int limit,
             @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(required = false) String event_type,
             HttpServletRequest request) {
 
         String token = AuthController.extractToken(request, authorization);
@@ -68,7 +71,6 @@ public class EventController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // Limit validation
         if (limit > 200) {
             limit = 200;
         }
@@ -87,7 +89,7 @@ public class EventController {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
 
-        EventListResponse response = eventService.getEvents(fromDate, toDate, limit, offset);
+        EventListResponse response = eventService.getEvents(fromDate, toDate, limit, offset, event_type);
         return ResponseEntity.ok(response);
     }
 

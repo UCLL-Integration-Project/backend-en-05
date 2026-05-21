@@ -1,5 +1,6 @@
 package be.ucll.it.courses.backend.service;
 
+import be.ucll.it.courses.backend.controller.dto.CreateEventResult;
 import be.ucll.it.courses.backend.controller.dto.EventListItemResponse;
 import be.ucll.it.courses.backend.controller.dto.EventListResponse;
 import be.ucll.it.courses.backend.controller.dto.EventRequest;
@@ -7,6 +8,7 @@ import be.ucll.it.courses.backend.controller.dto.EventResponse;
 import be.ucll.it.courses.backend.model.Event;
 import be.ucll.it.courses.backend.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,13 +27,16 @@ public class EventService {
     private final EventRepository eventRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
+    @Value("${app.deduplication.window-seconds:5}")
+    private long deduplicationWindowSeconds;
+
     @Autowired
     public EventService(EventRepository eventRepository, SimpMessagingTemplate messagingTemplate) {
         this.eventRepository = eventRepository;
         this.messagingTemplate = messagingTemplate;
     }
 
-    public EventListResponse getEvents(OffsetDateTime from, OffsetDateTime to, int limit, int offset) {
+    public EventListResponse getEvents(OffsetDateTime from, OffsetDateTime to, int limit, int offset, String eventType) {
         Specification<Event> spec = Specification.where(null);
 
         if (from != null) {
@@ -38,6 +44,9 @@ public class EventService {
         }
         if (to != null) {
             spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("timestamp"), to));
+        }
+        if (eventType != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("eventType"), eventType));
         }
 
         int page = offset / limit;
@@ -50,7 +59,8 @@ public class EventService {
                 e.getTemperature(),
                 e.getBatteryPct(),
                 e.getDurationS(),
-                e.getIsExtinguished()
+                e.getIsExtinguished(),
+                e.getEventType()
             ))
             .collect(Collectors.toList());
 
@@ -65,7 +75,15 @@ public class EventService {
         eventRepository.deleteAll();
     }
 
-    public EventResponse createEvent(EventRequest request, String deviceId) {
+    public CreateEventResult createEvent(EventRequest request, String deviceId) {
+        OffsetDateTime windowStart = request.timestamp().minusSeconds(deduplicationWindowSeconds);
+        OffsetDateTime windowEnd = request.timestamp().plusSeconds(deduplicationWindowSeconds);
+
+        Optional<Event> existing = eventRepository.findFirstByDeviceIdAndTimestampBetween(deviceId, windowStart, windowEnd);
+        if (existing.isPresent()) {
+            return new CreateEventResult(new EventResponse(existing.get().getIncidentId(), "duplicate"), false);
+        }
+
         Event event = new Event();
         event.setTimestamp(request.timestamp());
         event.setTemperature(request.temperature());
@@ -73,19 +91,20 @@ public class EventService {
         event.setDurationS(request.duration_s());
         event.setIsExtinguished(request.is_extinguished());
         event.setDeviceId(deviceId);
+        event.setEventType(request.event_type());
 
         Event savedEvent = eventRepository.save(event);
 
-        // Broadcast to all dashboard clients in real time
         messagingTemplate.convertAndSend("/topic/events", new EventListItemResponse(
             savedEvent.getIncidentId(),
             savedEvent.getTimestamp(),
             savedEvent.getTemperature(),
             savedEvent.getBatteryPct(),
             savedEvent.getDurationS(),
-            savedEvent.getIsExtinguished()
+            savedEvent.getIsExtinguished(),
+            savedEvent.getEventType()
         ));
 
-        return new EventResponse(savedEvent.getIncidentId(), "created");
+        return new CreateEventResult(new EventResponse(savedEvent.getIncidentId(), "created"), true);
     }
 }

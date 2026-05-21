@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-backup-script
+  namespace: itip-en-05
+data:
+  backup.sh: |
+    #!/bin/sh
+    set -e
+
+    TIMESTAMP=$(date +%Y-%m-%dT%H-%M-%S)
+    FILENAME="backup-${TIMESTAMP}.sql"
+    BACKUP_DIR="/backups"
+
+    echo "Starting backup of ${DB_NAME} to ${BACKUP_DIR}/${FILENAME}..."
+
+    # Perform backup
+    PGPASSWORD=$DB_PASSWORD pg_dump -h $DB_HOST -U $DB_USER -d $DB_NAME > ${BACKUP_DIR}/${FILENAME}
+
+    echo "Backup completed successfully."
+
+    # Retention policy: Delete files older than 2 days (48 hours = 2880 minutes)
+    echo "Applying retention policy: deleting files older than 2 days..."
+    find ${BACKUP_DIR} -name "backup-*.sql" -type f -mmin +2880 -delete
+
+    echo "Retention policy applied."
