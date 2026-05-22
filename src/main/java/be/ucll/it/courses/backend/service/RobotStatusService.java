@@ -1,68 +1,115 @@
 package be.ucll.it.courses.backend.service;
 
+import be.ucll.it.courses.backend.model.Device;
+import be.ucll.it.courses.backend.repository.DeviceRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class RobotStatusService {
 
-    private static final long OFFLINE_THRESHOLD_MS = 30_000;
+    @org.springframework.beans.factory.annotation.Value("${app.status.offline-threshold-seconds:30}")
+    private long offlineThresholdSeconds;
 
-    private volatile Instant lastHeartbeat = null;
-    private volatile String lastDeviceId = null;
-    private volatile boolean online = false;
-
+    private final DeviceRepository deviceRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public RobotStatusService(SimpMessagingTemplate messagingTemplate) {
+    public RobotStatusService(DeviceRepository deviceRepository, SimpMessagingTemplate messagingTemplate) {
+        this.deviceRepository = deviceRepository;
         this.messagingTemplate = messagingTemplate;
     }
 
+    @Transactional
     public void recordHeartbeat(String deviceId) {
-        lastHeartbeat = Instant.now();
-        lastDeviceId = deviceId;
-        if (!online) {
-            online = true;
-            broadcastStatus(deviceId, true);
+        Optional<Device> deviceOpt = deviceRepository.findById(deviceId);
+        if (deviceOpt.isPresent()) {
+            Device device = deviceOpt.get();
+            boolean wasOffline = !device.isOnline();
+            device.setOnline(true);
+            device.setLastSeen(LocalDateTime.now());
+            deviceRepository.save(device);
+
+            if (wasOffline) {
+                broadcastOnlineStatus(deviceId);
+            }
         }
     }
 
-    public boolean isOnline() {
-        return online;
+    @Transactional
+    public void markOffline(String deviceId) {
+        Optional<Device> deviceOpt = deviceRepository.findById(deviceId);
+        if (deviceOpt.isPresent()) {
+            Device device = deviceOpt.get();
+            if (device.isOnline()) {
+                device.setOnline(false);
+                deviceRepository.save(device);
+                broadcastOfflineStatus(device);
+            }
+        }
     }
 
     public Map<String, Object> getStatus() {
+        Optional<Device> latestDevice = deviceRepository.findAll().stream()
+                .filter(d -> d.getLastSeen() != null)
+                .max(java.util.Comparator.comparing(Device::getLastSeen));
+
+        if (latestDevice.isEmpty()) {
+            return Map.of("online", false, "deviceId", "unknown");
+        }
+
+        Device device = latestDevice.get();
         return Map.of(
-            "online", online,
-            "deviceId", lastDeviceId != null ? lastDeviceId : "unknown",
-            "wifi_connected", online,
-            "mode", online ? "patrolling" : "offline",
+            "online", device.isOnline(),
+            "deviceId", device.getDeviceId(),
+            "wifi_connected", device.isOnline(),
+            "mode", device.isOnline() ? "patrolling" : "offline",
             "battery_pct", 100,
-            "last_seen", lastHeartbeat != null ? lastHeartbeat.toString() : "",
+            "last_seen", device.getLastSeen().toString(),
             "last_event_id", ""
         );
     }
 
     @Scheduled(fixedDelay = 5000)
-    public void checkHeartbeat() {
-        if (online && lastHeartbeat != null) {
-            long silenceMs = Instant.now().toEpochMilli() - lastHeartbeat.toEpochMilli();
-            if (silenceMs > OFFLINE_THRESHOLD_MS) {
-                online = false;
-                broadcastStatus("unknown", false);
+    @Transactional
+    public void checkHeartbeats() {
+        List<Device> devices = deviceRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Device device : devices) {
+            if (device.isOnline() && device.getLastSeen() != null) {
+                long silenceSeconds = now.toEpochSecond(ZoneOffset.UTC) - device.getLastSeen().toEpochSecond(ZoneOffset.UTC);
+                if (silenceSeconds > offlineThresholdSeconds) {
+                    device.setOnline(false);
+                    deviceRepository.save(device);
+                    broadcastOfflineStatus(device);
+                }
             }
         }
     }
 
-    private void broadcastStatus(String deviceId, boolean isOnline) {
+    private void broadcastOnlineStatus(String deviceId) {
         messagingTemplate.convertAndSend("/topic/status", Map.of(
-            "deviceId", deviceId,
-            "online", isOnline,
-            "timestamp", Instant.now().toString()
+            "type", "robot_online",
+            "device_id", deviceId,
+            "timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        ));
+    }
+
+    private void broadcastOfflineStatus(Device device) {
+        messagingTemplate.convertAndSend("/topic/status", Map.of(
+            "type", "robot_offline",
+            "device_id", device.getDeviceId(),
+            "last_seen", device.getLastSeen() != null ? 
+                device.getLastSeen().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "unknown"
         ));
     }
 }

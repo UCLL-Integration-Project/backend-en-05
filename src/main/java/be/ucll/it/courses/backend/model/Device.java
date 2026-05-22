@@ -18,6 +18,12 @@ public class Device {
     @jakarta.persistence.Column(name = "name")
     private String name;
 
+    @jakarta.persistence.Column(name = "is_online")
+    private boolean online;
+
+    @jakarta.persistence.Column(name = "last_seen")
+    private java.time.LocalDateTime lastSeen;
+
     public Device() {}
 
     public Device(String deviceId, String deviceToken, String name) {
@@ -48,5 +54,21 @@ public class Device {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isOnline() {
+        return online;
+    }
+
+    public void setOnline(boolean online) {
+        this.online = online;
+    }
+
+    public java.time.LocalDateTime getLastSeen() {
+        return lastSeen;
+    }
+
+    public void setLastSeen(java.time.LocalDateTime lastSeen) {
+        this.lastSeen = lastSeen;
     }
 }

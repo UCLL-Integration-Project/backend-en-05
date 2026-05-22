@@ -17,34 +17,39 @@ public class StatusService {
 
     private final TelemetryRepository telemetryRepository;
     private final EventRepository eventRepository;
+    private final be.ucll.it.courses.backend.repository.DeviceRepository deviceRepository;
 
     @Autowired
-    public StatusService(TelemetryRepository telemetryRepository, EventRepository eventRepository) {
+    public StatusService(TelemetryRepository telemetryRepository, 
+                         EventRepository eventRepository,
+                         be.ucll.it.courses.backend.repository.DeviceRepository deviceRepository) {
         this.telemetryRepository = telemetryRepository;
         this.eventRepository = eventRepository;
+        this.deviceRepository = deviceRepository;
     }
 
     public Optional<RobotStatusResponse> getRobotStatus() {
-        Optional<Telemetry> latestTelemetry = telemetryRepository.findFirstByOrderByTimeDesc();
-        
-        if (latestTelemetry.isEmpty()) {
+        // Find the device that was last seen most recently
+        Optional<be.ucll.it.courses.backend.model.Device> latestDevice = deviceRepository.findAll().stream()
+                .filter(d -> d.getLastSeen() != null)
+                .max(java.util.Comparator.comparing(be.ucll.it.courses.backend.model.Device::getLastSeen));
+
+        if (latestDevice.isEmpty()) {
             return Optional.empty();
         }
 
-        Telemetry telemetry = latestTelemetry.get();
+        be.ucll.it.courses.backend.model.Device device = latestDevice.get();
+        Optional<Telemetry> latestTelemetry = telemetryRepository.findFirstByOrderByTimeDesc();
         Optional<Event> latestEvent = eventRepository.findFirstByOrderByTimestampDesc();
 
-        OffsetDateTime lastSeen = telemetry.getTime();
-        boolean wifiConnected = lastSeen.isAfter(OffsetDateTime.now().minusMinutes(1));
+        java.time.OffsetDateTime lastSeen = device.getLastSeen().atOffset(java.time.ZoneOffset.UTC);
+        boolean wifiConnected = device.isOnline();
         
         RobotMode mode;
         if (!wifiConnected) {
             mode = RobotMode.offline;
         } else if (latestEvent.isPresent() && !Boolean.TRUE.equals(latestEvent.get().getIsExtinguished())) {
-            // If the latest event is not extinguished, we are in fire_detected or extinguishing mode.
-            // Since we don't have a specific field for pump status in Event, 
-            // but Telemetry has pumpActive.
-            if (Boolean.TRUE.equals(telemetry.getPumpActive())) {
+            if (latestTelemetry.isPresent() && Boolean.TRUE.equals(latestTelemetry.get().getPumpActive())) {
                 mode = RobotMode.extinguishing;
             } else {
                 mode = RobotMode.fire_detected;
@@ -58,7 +63,7 @@ public class StatusService {
             batteryPct = latestEvent.get().getBatteryPct();
         }
 
-        Short waterLevelPct = telemetry.getWaterLevelPct();
+        Short waterLevelPct = latestTelemetry.map(Telemetry::getWaterLevelPct).orElse(null);
         boolean waterWarning = waterLevelPct != null && waterLevelPct < 20;
 
         return Optional.of(new RobotStatusResponse(
