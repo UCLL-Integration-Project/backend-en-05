@@ -20,9 +20,6 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "token")
-    private String token;
-
     @Column(name = "password")
     private String password;
 
@@ -31,11 +28,10 @@ public class User {
 
     public User(){}
 
-    public User(String username, String firstName, String lastName, String token, String password, String role){
+    public User(String username, String firstName, String lastName, String password, String role){
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.token = token;
         this.password = password;
         this.role = role;
     }
@@ -47,15 +43,6 @@ public class User {
     public void setRole(String role) {
         this.role = role;
     }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
 
     public Long getId() {
         return id;

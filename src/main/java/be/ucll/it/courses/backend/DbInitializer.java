@@ -38,7 +38,7 @@ public class DbInitializer {
     @PostConstruct
     public void initializeData() {
         if (userRepository.count() == 0 || 
-            userRepository.findAll().stream().anyMatch(u -> u.getPassword() == null || u.getToken() == null)) {
+            userRepository.findAll().stream().anyMatch(u -> u.getPassword() == null)) {
             
             eventRepository.deleteAll();
             userRepository.deleteAll();
@@ -46,9 +46,9 @@ public class DbInitializer {
             telemetryRepository.deleteAll();
 
             // Users
-            User admin = new User("admin", "Administrator", "System", "user-token-admin", passwordEncoder.encode("admin123"), "ADMIN");
-            User user1 = new User("jdoe", "John", "Doe", "user-token-01", passwordEncoder.encode("password123"), "VIEWER");
-            User user2 = new User("asmith", "Alice", "Smith", "user-token-02", passwordEncoder.encode("password123"), "VIEWER");
+            User admin = new User("admin", "Administrator", "System", passwordEncoder.encode("admin123"), "ADMIN");
+            User user1 = new User("jdoe", "John", "Doe", passwordEncoder.encode("password123"), "VIEWER");
+            User user2 = new User("asmith", "Alice", "Smith", passwordEncoder.encode("password123"), "VIEWER");
             userRepository.saveAll(List.of(admin, user1, user2));
 
             // Devices
@@ -78,9 +78,9 @@ public class DbInitializer {
         userRepository.deleteAll();
         
         userRepository.saveAll(List.of(
-            new User("admin",  "Administrator", "",      "user-token-admin", passwordEncoder.encode("admin123"), "ADMIN"),
-            new User("jdoe",   "John",          "Doe",   "user-token-01",    passwordEncoder.encode("password123"), "VIEWER"),
-            new User("asmith", "Alice",         "Smith", "user-token-02",    passwordEncoder.encode("password123"), "VIEWER")
+            new User("admin",  "Administrator", "",      passwordEncoder.encode("admin123"), "ADMIN"),
+            new User("jdoe",   "John",          "Doe",   passwordEncoder.encode("password123"), "VIEWER"),
+            new User("asmith", "Alice",         "Smith", passwordEncoder.encode("password123"), "VIEWER")
         ));
 
         deviceRepository.saveAll(List.of(
