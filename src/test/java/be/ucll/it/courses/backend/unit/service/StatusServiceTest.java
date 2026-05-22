@@ -28,15 +28,18 @@ class StatusServiceTest {
     @Mock
     private EventRepository eventRepository;
 
+    @Mock
+    private be.ucll.it.courses.backend.repository.DeviceRepository deviceRepository;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        statusService = new StatusService(telemetryRepository, eventRepository);
+        statusService = new StatusService(telemetryRepository, eventRepository, deviceRepository);
     }
 
     @Test
-    void getRobotStatusReturnsEmptyWhenNoTelemetry() {
-        when(telemetryRepository.findFirstByOrderByTimeDesc()).thenReturn(Optional.empty());
+    void getRobotStatusReturnsEmptyWhenNoDevices() {
+        when(deviceRepository.findAll()).thenReturn(java.util.List.of());
 
         Optional<RobotStatusResponse> status = statusService.getRobotStatus();
 
@@ -44,11 +47,13 @@ class StatusServiceTest {
     }
 
     @Test
-    void getRobotStatusReturnsOfflineWhenTelemetryIsOld() {
-        Telemetry oldTelemetry = new Telemetry();
-        oldTelemetry.setTime(OffsetDateTime.now().minusMinutes(5));
+    void getRobotStatusReturnsOfflineWhenDeviceIsOffline() {
+        be.ucll.it.courses.backend.model.Device device = new be.ucll.it.courses.backend.model.Device("ESP32-01", "token", "Robot");
+        device.setOnline(false);
+        device.setLastSeen(java.time.LocalDateTime.now());
         
-        when(telemetryRepository.findFirstByOrderByTimeDesc()).thenReturn(Optional.of(oldTelemetry));
+        when(deviceRepository.findAll()).thenReturn(java.util.List.of(device));
+        when(telemetryRepository.findFirstByOrderByTimeDesc()).thenReturn(Optional.empty());
         when(eventRepository.findFirstByOrderByTimestampDesc()).thenReturn(Optional.empty());
 
         Optional<RobotStatusResponse> status = statusService.getRobotStatus();
@@ -60,6 +65,12 @@ class StatusServiceTest {
 
     @Test
     void getRobotStatusReturnsPatrollingWhenOnlineAndNoFire() {
+        be.ucll.it.courses.backend.model.Device device = new be.ucll.it.courses.backend.model.Device("ESP32-01", "token", "Robot");
+        device.setOnline(true);
+        device.setLastSeen(java.time.LocalDateTime.now());
+
+        when(deviceRepository.findAll()).thenReturn(java.util.List.of(device));
+        
         Telemetry recentTelemetry = new Telemetry();
         recentTelemetry.setTime(OffsetDateTime.now());
         recentTelemetry.setPumpActive(false);

@@ -32,17 +32,28 @@ public class StatusIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private be.ucll.it.courses.backend.repository.TelemetryRepository telemetryRepository;
 
+    @Autowired
+    private be.ucll.it.courses.backend.repository.DeviceRepository deviceRepository;
+
     @BeforeEach
     void setUp() {
         eventRepository.deleteAll();
         telemetryRepository.deleteAll();
         userRepository.deleteAll();
+        deviceRepository.deleteAll();
+
         adminToken = UUID.randomUUID().toString();
         User admin = new User();
         admin.setUsername("admin");
         admin.setToken(adminToken);
         admin.setRole("ADMIN");
         userRepository.save(admin);
+
+        // Save a default device to avoid 404 in status tests
+        be.ucll.it.courses.backend.model.Device device = new be.ucll.it.courses.backend.model.Device("ESP32-01", "token", "Robot");
+        device.setLastSeen(java.time.LocalDateTime.now());
+        device.setOnline(true);
+        deviceRepository.save(device);
     }
 
     @Test
