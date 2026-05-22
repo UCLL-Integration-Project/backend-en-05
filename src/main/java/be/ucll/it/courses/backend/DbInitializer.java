@@ -38,7 +38,7 @@ public class DbInitializer {
     @PostConstruct
     public void initializeData() {
         if (userRepository.count() == 0 || 
-            userRepository.findAll().stream().anyMatch(u -> u.getPassword() == null || u.getToken() == null)) {
+            userRepository.findAll().stream().anyMatch(u -> u.getPassword() == null)) {
             
             eventRepository.deleteAll();
             userRepository.deleteAll();
