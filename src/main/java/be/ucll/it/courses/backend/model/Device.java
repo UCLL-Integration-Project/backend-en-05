@@ -19,7 +19,7 @@ public class Device {
     private String name;
 
     @jakarta.persistence.Column(name = "is_online")
-    private boolean online;
+    private Boolean online = false;
 
     @jakarta.persistence.Column(name = "last_seen")
     private java.time.LocalDateTime lastSeen;
@@ -57,7 +57,7 @@ public class Device {
     }
 
     public boolean isOnline() {
-        return online;
+        return online != null && online;
     }
 
     public void setOnline(boolean online) {
