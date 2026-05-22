@@ -1,5 +1,6 @@
 package be.ucll.it.courses.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -46,6 +47,16 @@ public class Telemetry {
     @Column(name = "water_level_pct")
     private Short waterLevelPct;
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
+    @JsonProperty("accuracy_m")
+    @Column(name = "accuracy_m")
+    private Double accuracyM;
+
     public Telemetry() {}
 
     public Long getId() { return id; }
@@ -80,4 +91,13 @@ public class Telemetry {
 
     public Short getWaterLevelPct() { return waterLevelPct; }
     public void setWaterLevelPct(Short waterLevelPct) { this.waterLevelPct = waterLevelPct; }
+
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
+
+    public Double getAccuracyM() { return accuracyM; }
+    public void setAccuracyM(Double accuracyM) { this.accuracyM = accuracyM; }
 }

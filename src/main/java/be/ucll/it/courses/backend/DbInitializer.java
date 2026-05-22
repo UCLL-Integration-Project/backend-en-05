@@ -4,10 +4,10 @@ import be.ucll.it.courses.backend.model.Device;
 import be.ucll.it.courses.backend.model.Telemetry;
 import be.ucll.it.courses.backend.model.User;
 import be.ucll.it.courses.backend.repository.DeviceRepository;
+import be.ucll.it.courses.backend.repository.EventRepository;
 import be.ucll.it.courses.backend.repository.TelemetryRepository;
 import be.ucll.it.courses.backend.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -20,21 +20,27 @@ public class DbInitializer {
     private final UserRepository userRepository;
     private final DeviceRepository deviceRepository;
     private final TelemetryRepository telemetryRepository;
+    private final EventRepository eventRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DbInitializer(UserRepository userRepository, 
                          DeviceRepository deviceRepository, 
                          TelemetryRepository telemetryRepository,
+                         EventRepository eventRepository,
                          PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.deviceRepository = deviceRepository;
         this.telemetryRepository = telemetryRepository;
+        this.eventRepository = eventRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @PostConstruct
     public void initializeData() {
-        if (userRepository.count() == 0 || userRepository.findAll().stream().anyMatch(u -> u.getPassword() == null)) {
+        if (userRepository.count() == 0 || 
+            userRepository.findAll().stream().anyMatch(u -> u.getPassword() == null || u.getToken() == null)) {
+            
+            eventRepository.deleteAll();
             userRepository.deleteAll();
             deviceRepository.deleteAll();
             telemetryRepository.deleteAll();

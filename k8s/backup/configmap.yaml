@@ -3,6 +3,8 @@ kind: ConfigMap
 metadata:
   name: database-backup-script
   namespace: itip-en-05
+  labels:
+    app.kubernetes.io/part-of: frontend-en-05-app
 data:
   backup.sh: |
     #!/bin/sh
