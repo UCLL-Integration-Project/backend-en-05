@@ -2,10 +2,10 @@ package be.ucll.it.courses.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,8 +21,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -31,27 +29,40 @@ public class SecurityConfig {
     private static final String ROLES_CLAIM = "https://en05.ucll.be/roles";
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring()
-            .requestMatchers(new AntPathRequestMatcher("/v1/events/**"))
-            .requestMatchers(new AntPathRequestMatcher("/v1/telemetry/**"))
-            .requestMatchers(new AntPathRequestMatcher("/v1/robot/heartbeat/**"))
-            .requestMatchers(new AntPathRequestMatcher("/ws/**"))
-            .requestMatchers(new AntPathRequestMatcher("/ws"))
-            .requestMatchers(new AntPathRequestMatcher("/ws**"))
-            .requestMatchers(new AntPathRequestMatcher("/ws/info/**"))
-            .requestMatchers(new AntPathRequestMatcher("/v1/health"))
-            .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**"))
-            .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**"));
+    @Order(1)
+    public SecurityFilterChain robotFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/v1/events", "/v1/events/**", "/v1/telemetry", "/v1/telemetry/**", "/v1/robot/heartbeat", "/v1/robot/heartbeat/**", "/ws/**", "/ws")
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .headers(headers -> headers
+                .contentSecurityPolicy(csp -> csp.policyDirectives(
+                    "default-src 'self'; script-src 'self'; style-src 'self'; " +
+                    "connect-src 'self' wss://backend-en-05-itip-en-05.apps.okd.ucll.cloud https://backend-en-05-itip-en-05.apps.okd.ucll.cloud; " +
+                    "img-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+                ))
+                .frameOptions(frame -> frame.deny())
+                .httpStrictTransportSecurity(hsts -> hsts
+                    .maxAgeInSeconds(31536000)
+                    .includeSubDomains(true)
+                    .preload(true)
+                )
+            );
+        return http.build();
     }
 
     @Bean
+    @Order(2)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/v1/health").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/v1/command").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
