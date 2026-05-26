@@ -38,13 +38,27 @@ public class SecurityConfig {
                 .requestMatchers("/ws/**", "/ws", "/ws**", "/ws/info/**").permitAll()
                 .requestMatchers("/v1/health").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                // Explicitly permit these without JWT filtering
                 .requestMatchers(HttpMethod.POST, "/v1/events").permitAll()
                 .requestMatchers(HttpMethod.POST, "/v1/telemetry").permitAll()
                 .requestMatchers(HttpMethod.POST, "/v1/robot/heartbeat").permitAll()
+                .requestMatchers("/v1/command").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                .jwt(jwt -> jwt
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                )
+                // Skip JWT validation for the public robot endpoints
+                .authenticationEntryPoint((request, response, authException) -> {
+                    String path = request.getRequestURI();
+                    if (path.contains("/v1/events") || path.contains("/v1/telemetry") || path.contains("/v1/robot/heartbeat")) {
+                        // Let it pass to the controller even if JWT filter failed
+                        request.getRequestDispatcher(path).forward(request, response);
+                    } else {
+                        response.sendError(401, authException.getMessage());
+                    }
+                })
             )
             .headers(headers -> headers
                 .contentSecurityPolicy(csp -> csp.policyDirectives(
