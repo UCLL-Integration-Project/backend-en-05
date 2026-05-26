@@ -21,6 +21,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -31,10 +33,16 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
-            .requestMatchers("/v1/events", "/v1/telemetry", "/v1/robot/heartbeat")
-            .requestMatchers("/ws/**", "/ws", "/ws**", "/ws/info/**")
-            .requestMatchers("/v1/health")
-            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**");
+            .requestMatchers(new AntPathRequestMatcher("/v1/events/**"))
+            .requestMatchers(new AntPathRequestMatcher("/v1/telemetry/**"))
+            .requestMatchers(new AntPathRequestMatcher("/v1/robot/heartbeat/**"))
+            .requestMatchers(new AntPathRequestMatcher("/ws/**"))
+            .requestMatchers(new AntPathRequestMatcher("/ws"))
+            .requestMatchers(new AntPathRequestMatcher("/ws**"))
+            .requestMatchers(new AntPathRequestMatcher("/ws/info/**"))
+            .requestMatchers(new AntPathRequestMatcher("/v1/health"))
+            .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**"))
+            .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**"));
     }
 
     @Bean
