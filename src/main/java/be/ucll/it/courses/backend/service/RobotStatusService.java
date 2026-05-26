@@ -21,11 +21,49 @@ public class RobotStatusService {
     private long offlineThresholdSeconds;
 
     private final DeviceRepository deviceRepository;
+    private final be.ucll.it.courses.backend.repository.TelemetryRepository telemetryRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final Map<String, LocalDateTime> lastSavedTelemetry = new java.util.concurrent.ConcurrentHashMap<>();
 
-    public RobotStatusService(DeviceRepository deviceRepository, SimpMessagingTemplate messagingTemplate) {
+    public RobotStatusService(DeviceRepository deviceRepository, 
+                              be.ucll.it.courses.backend.repository.TelemetryRepository telemetryRepository,
+                              SimpMessagingTemplate messagingTemplate) {
         this.deviceRepository = deviceRepository;
+        this.telemetryRepository = telemetryRepository;
         this.messagingTemplate = messagingTemplate;
+    }
+
+    @Transactional
+    public void processTelemetry(be.ucll.it.courses.backend.controller.dto.RobotTelemetryMessage message) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime lastSaved = lastSavedTelemetry.get(message.getDeviceId());
+
+        if (lastSaved == null || java.time.Duration.between(lastSaved, now).getSeconds() >= 10) {
+            be.ucll.it.courses.backend.model.Telemetry telemetry = new be.ucll.it.courses.backend.model.Telemetry();
+            
+            // Parse timestamp from message or use now
+            if (message.getTimestamp() != null) {
+                try {
+                    telemetry.setTime(java.time.OffsetDateTime.parse(message.getTimestamp()));
+                } catch (Exception e) {
+                    telemetry.setTime(java.time.OffsetDateTime.now());
+                }
+            } else {
+                telemetry.setTime(java.time.OffsetDateTime.now());
+            }
+
+            telemetry.setWaterLevelPct(message.getWaterLevelPct());
+            telemetry.setLatitude(message.getLatitude());
+            telemetry.setLongitude(message.getLongitude());
+            telemetry.setPumpActive(message.isFireDetected());
+            
+            // Map battery_pct to battery_voltage field (approximate or just store raw)
+            telemetry.setBatteryVoltage((float) message.getBatteryPct());
+            
+            telemetryRepository.save(telemetry);
+            lastSavedTelemetry.put(message.getDeviceId(), now);
+            System.out.println("Telemetry saved for device: " + message.getDeviceId());
+        }
     }
 
     @Transactional

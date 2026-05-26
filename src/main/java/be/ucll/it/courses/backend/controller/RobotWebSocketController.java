@@ -29,8 +29,11 @@ public class RobotWebSocketController {
         // Record heartbeat
         robotStatusService.recordHeartbeat(telemetry.getDeviceId());
 
-        // Broadcast telemetry to dashboards subscribed to /topic/events
-        messagingTemplate.convertAndSend("/topic/events", telemetry);
+        // Store telemetry in DB every 10 seconds (throttle)
+        robotStatusService.processTelemetry(telemetry);
+
+        // Broadcast telemetry to dashboards subscribed to /topic/telemetry
+        messagingTemplate.convertAndSend("/topic/telemetry", telemetry);
 
         if (telemetry.isFireDetected()) {
             // Optional: Broadcast specialized alert if needed
