@@ -3,6 +3,8 @@ package be.ucll.it.courses.backend.integration.messaging;
 import be.ucll.it.courses.backend.integration.BaseIntegrationTest;
 import be.ucll.it.courses.backend.model.Device;
 import be.ucll.it.courses.backend.repository.DeviceRepository;
+import be.ucll.it.courses.backend.repository.EventRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -38,9 +40,17 @@ public class LocationBroadcastIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private DeviceRepository deviceRepository;
 
+    @Autowired
+    private EventRepository eventRepository;
+
+    @BeforeEach
+    void setUp() {
+        eventRepository.deleteAll();
+        deviceRepository.deleteAll();
+    }
+
     @Test
     void broadcastsLocationUpdateWithinOneSecondOfTelemetryPost() throws Exception {
-        deviceRepository.deleteById("ESP32-01");
         deviceRepository.save(new Device("ESP32-01", "token-01", "Test Robot"));
 
         WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(
