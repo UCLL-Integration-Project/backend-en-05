@@ -35,9 +35,6 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
     private DeviceRepository deviceRepository;
 
     @Autowired
-    private be.ucll.it.courses.backend.repository.EventRepository eventRepository;
-
-    @Autowired
     private EventRepository eventRepository;
 
     @org.junit.jupiter.api.BeforeEach
@@ -48,10 +45,8 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testRobotOnlineOfflineCycle() throws Exception {
-        // Ensure device exists
-        String deviceId = "ESP32-ONLINE";
+        String deviceId = "ESP32-01";
         if (deviceRepository.findById(deviceId).isEmpty()) {
-            deviceRepository.save(new Device(deviceId, "token-online", "Test Robot"));
             deviceRepository.save(new Device(deviceId, "token-01", "Test Robot"));
         }
 
@@ -71,6 +66,7 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
             }
 
             @Override
+            @SuppressWarnings("unchecked")
             public void handleFrame(StompHeaders headers, Object payload) {
                 statusQueue.offer((Map<String, Object>) payload);
             }
@@ -87,27 +83,17 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
         assertThat(onlineMsg.get("type")).isEqualTo("robot_online");
         assertThat(onlineMsg.get("device_id")).isEqualTo(deviceId);
 
-        // Verify DB status - Wait up to 2 seconds for transaction to commit if needed
+        // Wait until DB reflects the online state (transaction may commit slightly after WS message)
         long start = System.currentTimeMillis();
         boolean online = false;
         while (System.currentTimeMillis() - start < 2000) {
             Device d = deviceRepository.findById(deviceId).orElseThrow();
-            if (d.isOnline()) {
-                online = true;
-                break;
-            }
+            if (d.isOnline()) { online = true; break; }
             Thread.sleep(100);
         }
         assertThat(online).isTrue();
-        // Small wait to ensure recordHeartbeat's transaction has committed before reading DB
-        Thread.sleep(100);
-
-        // Verify DB status
-        Device device = deviceRepository.findById(deviceId).orElseThrow();
-        assertThat(device.isOnline()).isTrue();
 
         // 2. Wait for timeout (threshold is 1s, scheduler runs every 5s)
-        // We might need to wait up to 10 seconds
         Map<String, Object> offlineMsg = statusQueue.poll(10, TimeUnit.SECONDS);
         assertThat(offlineMsg).isNotNull();
         assertThat(offlineMsg.get("type")).isEqualTo("robot_offline");

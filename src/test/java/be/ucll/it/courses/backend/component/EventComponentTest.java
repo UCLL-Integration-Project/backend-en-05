@@ -38,8 +38,7 @@ public class EventComponentTest {
 
         OffsetDateTime now = OffsetDateTime.now();
         
-        // EventRequest(timestamp, temperature, battery_pct, water_level_pct, duration_s, is_extinguished, event_type)
-        EventRequest request = new EventRequest(now, 80.5f, (short) 90, (short) 100, 5, false, "fire");
+        EventRequest request = new EventRequest(now, 80.5f, (short) 90, (short) 100, 5, false, null, null, null, "fire");
 
         // 1. Create first event
         eventService.createEvent(request, deviceId);
@@ -55,7 +54,7 @@ public class EventComponentTest {
         assertThat(eventRepository.findAll()).hasSize(1);
 
         // 3. Create event outside the window (e.g., 10 seconds later)
-        EventRequest requestLater = new EventRequest(now.plusSeconds(10), 81.0f, (short) 89, (short) 99, 5, false, "fire");
+        EventRequest requestLater = new EventRequest(now.plusSeconds(10), 81.0f, (short) 89, (short) 99, 5, false, null, null, null, "fire");
         eventService.createEvent(requestLater, deviceId);
         
         assertThat(eventRepository.findAll()).hasSize(2);
