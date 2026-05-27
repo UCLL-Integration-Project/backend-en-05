@@ -2,8 +2,6 @@ package be.ucll.it.courses.backend.service;
 
 import be.ucll.it.courses.backend.model.Device;
 import be.ucll.it.courses.backend.repository.DeviceRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -17,8 +15,6 @@ import java.util.Optional;
 
 @Service
 public class RobotStatusService {
-
-    private static final Logger log = LoggerFactory.getLogger(RobotStatusService.class);
 
     @org.springframework.beans.factory.annotation.Value("${app.status.offline-threshold-seconds:30}")
     private long offlineThresholdSeconds;
@@ -129,8 +125,6 @@ public class RobotStatusService {
             if (device.isOnline() && device.getLastSeen() != null) {
                 java.time.Duration silence = java.time.Duration.between(device.getLastSeen(), now);
                 if (silence.getSeconds() >= offlineThresholdSeconds) {
-                    log.info("checkHeartbeats: marking {} offline (silence={}s, threshold={}s)",
-                            device.getDeviceId(), silence.getSeconds(), offlineThresholdSeconds);
                     device.setOnline(false);
                     deviceRepository.save(device);
                     broadcastOfflineStatus(device);
@@ -148,21 +142,11 @@ public class RobotStatusService {
     }
 
     private void broadcastOfflineStatus(Device device) {
-        String deviceId = device.getDeviceId();
-        LocalDateTime lastSeen = device.getLastSeen();
-        log.info("broadcastOfflineStatus: sending robot_offline for {} on thread={}",
-                deviceId, Thread.currentThread().getName());
-        try {
-            messagingTemplate.convertAndSend("/topic/status", Map.of(
-                "type", "robot_offline",
-                "device_id", deviceId,
-                "last_seen", lastSeen != null ?
-                    lastSeen.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "unknown"
-            ));
-            log.info("broadcastOfflineStatus: convertAndSend completed for {}", deviceId);
-        } catch (Exception e) {
-            log.error("broadcastOfflineStatus: convertAndSend failed for {}", deviceId, e);
-            throw e;
-        }
+        messagingTemplate.convertAndSend("/topic/status", Map.of(
+            "type", "robot_offline",
+            "device_id", device.getDeviceId(),
+            "last_seen", device.getLastSeen() != null ?
+                device.getLastSeen().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "unknown"
+        ));
     }
 }
