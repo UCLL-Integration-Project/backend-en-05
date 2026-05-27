@@ -1,5 +1,6 @@
 package be.ucll.it.courses.backend.controller;
 
+import be.ucll.it.courses.backend.exception.UnauthorizedException;
 import be.ucll.it.courses.backend.model.Telemetry;
 import be.ucll.it.courses.backend.repository.TelemetryRepository;
 import be.ucll.it.courses.backend.repository.DeviceRepository;
@@ -34,7 +35,7 @@ public class TelemetryController {
             @RequestBody Telemetry telemetry) {
 
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("Invalid or missing Authorization header");
         }
 
         String token = authorization.substring(7);
@@ -42,7 +43,7 @@ public class TelemetryController {
         // Validate Device ID and Token against DB
         var device = deviceRepository.findByDeviceIdAndDeviceToken(deviceId, token);
         if (device.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("Device authentication failed");
         }
 
         telemetry.setTime(OffsetDateTime.now());

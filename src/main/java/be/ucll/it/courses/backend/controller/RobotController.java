@@ -1,8 +1,8 @@
 package be.ucll.it.courses.backend.controller;
 
+import be.ucll.it.courses.backend.exception.UnauthorizedException;
 import be.ucll.it.courses.backend.repository.DeviceRepository;
 import be.ucll.it.courses.backend.service.RobotStatusService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,12 +26,12 @@ public class RobotController {
             @RequestHeader("X-Device-ID") String deviceId) {
 
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("Invalid or missing Authorization header");
         }
 
         String token = authorization.substring(7);
         if (deviceRepository.findByDeviceIdAndDeviceToken(deviceId, token).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("Device authentication failed");
         }
 
         robotStatusService.recordHeartbeat(deviceId);

@@ -1,9 +1,9 @@
 package be.ucll.it.courses.backend.controller;
 
 import be.ucll.it.courses.backend.controller.dto.RobotStatusResponse;
+import be.ucll.it.courses.backend.exception.ResourceNotFoundException;
 import be.ucll.it.courses.backend.service.StatusService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +26,6 @@ public class StatusController {
     public ResponseEntity<RobotStatusResponse> getStatus() {
         Optional<RobotStatusResponse> status = statusService.getRobotStatus();
         return status.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                .orElseThrow(() -> new ResourceNotFoundException("No robot status found. Has any robot connected yet?"));
     }
 }

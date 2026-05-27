@@ -4,6 +4,7 @@ import be.ucll.it.courses.backend.controller.dto.CreateEventResult;
 import be.ucll.it.courses.backend.controller.dto.EventRequest;
 import be.ucll.it.courses.backend.controller.dto.EventListResponse;
 import be.ucll.it.courses.backend.controller.dto.EventResponse;
+import be.ucll.it.courses.backend.exception.UnauthorizedException;
 import be.ucll.it.courses.backend.service.EventService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,14 +37,14 @@ public class EventController {
             @Valid @RequestBody EventRequest request) {
 
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("Invalid or missing Authorization header");
         }
 
         String token = authorization.substring(7);
 
         var device = deviceRepository.findByDeviceIdAndDeviceToken(deviceId, token);
         if (device.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("Device authentication failed");
         }
 
         CreateEventResult result = eventService.createEvent(request, deviceId);
