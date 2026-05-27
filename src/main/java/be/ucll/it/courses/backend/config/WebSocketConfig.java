@@ -2,6 +2,7 @@ package be.ucll.it.courses.backend.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -12,7 +13,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic");
+        ThreadPoolTaskScheduler heartbeatScheduler = new ThreadPoolTaskScheduler();
+        heartbeatScheduler.setPoolSize(1);
+        heartbeatScheduler.setThreadNamePrefix("ws-heartbeat-");
+        heartbeatScheduler.initialize();
+        config.enableSimpleBroker("/topic")
+                .setHeartbeatValue(new long[]{10000, 10000})
+                .setTaskScheduler(heartbeatScheduler);
         config.setApplicationDestinationPrefixes("/app");
     }
 

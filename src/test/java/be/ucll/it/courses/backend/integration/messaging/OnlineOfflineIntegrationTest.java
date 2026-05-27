@@ -7,6 +7,7 @@ import be.ucll.it.courses.backend.repository.EventRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -53,6 +54,15 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
         WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(
                 List.of(new WebSocketTransport(new StandardWebSocketClient()))));
         stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+        // A TaskScheduler is required for SockJS/STOMP heartbeats. Without it,
+        // the client cannot respond to server heartbeats and the broker may
+        // consider the session idle and silently stop dispatching messages —
+        // which is what causes the robot_offline broadcast (sent ~2s after
+        // ping by the scheduler) to never reach the test client in CI.
+        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+        taskScheduler.afterPropertiesSet();
+        stompClient.setTaskScheduler(taskScheduler);
+        stompClient.setDefaultHeartbeat(new long[]{10000, 10000});
 
         BlockingQueue<Map<String, Object>> statusQueue = new LinkedBlockingDeque<>();
 
@@ -93,10 +103,9 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
         }
         assertThat(online).isTrue();
 
-        // 2. Poll DB and WS queue concurrently. WS broadcast happens inside the
-        // scheduler's @Transactional method (before commit), so it may arrive
-        // before or after the DB-visible offline state — and SockJS delivery
-        // can be slow in CI. Wait up to 20s for both.
+        // 2. Wait for the @Scheduled checkHeartbeats to detect silence
+        // (threshold=1s in test config, scheduler runs every 1s) and broadcast
+        // robot_offline. Poll DB and WS concurrently up to 20s.
         long deadline = System.currentTimeMillis() + 20000;
         boolean offline = false;
         Map<String, Object> offlineMsg = null;
