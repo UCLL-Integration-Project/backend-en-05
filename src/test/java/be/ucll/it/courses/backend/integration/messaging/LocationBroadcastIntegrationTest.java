@@ -40,6 +40,10 @@ public class LocationBroadcastIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void broadcastsLocationUpdateWithinOneSecondOfTelemetryPost() throws Exception {
+<<<<<<< HEAD
+=======
+        deviceRepository.deleteById("ESP32-01");
+>>>>>>> bc95b2114f98259bc52f43f19dc8cedbf0b26135
         deviceRepository.save(new Device("ESP32-01", "token-01", "Test Robot"));
 
         WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(

@@ -43,6 +43,11 @@ public class LowWaterAlertIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testLowWaterAlertFlow() throws Exception {
+<<<<<<< HEAD
+=======
+        // Ensure device exists
+        deviceRepository.deleteById("ESP32-01");
+>>>>>>> bc95b2114f98259bc52f43f19dc8cedbf0b26135
         deviceRepository.save(new be.ucll.it.courses.backend.model.Device("ESP32-01", "token-01", "Test Robot"));
 
         // 1. Connect to WebSocket

@@ -3,6 +3,7 @@ package be.ucll.it.courses.backend.integration.messaging;
 import be.ucll.it.courses.backend.integration.BaseIntegrationTest;
 import be.ucll.it.courses.backend.model.Device;
 import be.ucll.it.courses.backend.repository.DeviceRepository;
+import be.ucll.it.courses.backend.repository.EventRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -33,8 +34,12 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private DeviceRepository deviceRepository;
 
+    @Autowired
+    private EventRepository eventRepository;
+
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
+        eventRepository.deleteAll();
         deviceRepository.deleteAll();
     }
 
@@ -43,7 +48,7 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
         // Ensure device exists
         String deviceId = "ESP32-01";
         if (deviceRepository.findById(deviceId).isEmpty()) {
-            deviceRepository.save(new Device(deviceId, "token", "Test Robot"));
+            deviceRepository.save(new Device(deviceId, "token-01", "Test Robot"));
         }
 
         WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(
@@ -77,6 +82,9 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
         assertThat(onlineMsg).isNotNull();
         assertThat(onlineMsg.get("type")).isEqualTo("robot_online");
         assertThat(onlineMsg.get("device_id")).isEqualTo(deviceId);
+
+        // Small wait to ensure recordHeartbeat's transaction has committed before reading DB
+        Thread.sleep(100);
 
         // Verify DB status
         Device device = deviceRepository.findById(deviceId).orElseThrow();
