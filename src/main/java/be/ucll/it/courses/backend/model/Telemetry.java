@@ -17,39 +17,51 @@ public class Telemetry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonProperty("time")
     @Column(name = "time")
     private OffsetDateTime time;
 
+    @JsonProperty("battery_voltage")
     @Column(name = "battery_voltage")
     private Float batteryVoltage;
 
+    @JsonProperty("temperature_c")
     @Column(name = "temperature_c")
     private Float temperatureC;
 
+    @JsonProperty("flame_left")
     @Column(name = "flame_left")
     private Short flameLeft;
 
+    @JsonProperty("flame_center")
     @Column(name = "flame_center")
     private Short flameCenter;
 
+    @JsonProperty("flame_right")
     @Column(name = "flame_right")
     private Short flameRight;
 
+    @JsonProperty("pump_active")
     @Column(name = "pump_active")
     private Boolean pumpActive = false;
 
+    @JsonProperty("motor_left_pwm")
     @Column(name = "motor_left_pwm")
     private Short motorLeftPwm;
 
+    @JsonProperty("motor_right_pwm")
     @Column(name = "motor_right_pwm")
     private Short motorRightPwm;
 
+    @JsonProperty("water_level_pct")
     @Column(name = "water_level_pct")
     private Short waterLevelPct;
 
+    @JsonProperty("latitude")
     @Column(name = "latitude")
     private Double latitude;
 
+    @JsonProperty("longitude")
     @Column(name = "longitude")
     private Double longitude;
 
