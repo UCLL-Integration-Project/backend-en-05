@@ -93,18 +93,26 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
         }
         assertThat(online).isTrue();
 
-        // 2. Wait for scheduler to mark offline in DB (threshold=1s, rate=1s)
-        long offlineStart = System.currentTimeMillis();
+        // 2. Poll DB and WS queue concurrently. WS broadcast happens inside the
+        // scheduler's @Transactional method (before commit), so it may arrive
+        // before or after the DB-visible offline state — and SockJS delivery
+        // can be slow in CI. Wait up to 20s for both.
+        long deadline = System.currentTimeMillis() + 20000;
         boolean offline = false;
-        while (System.currentTimeMillis() - offlineStart < 15000) {
-            Device d = deviceRepository.findById(deviceId).orElseThrow();
-            if (!d.isOnline()) { offline = true; break; }
-            Thread.sleep(200);
+        Map<String, Object> offlineMsg = null;
+        while (System.currentTimeMillis() < deadline && (!offline || offlineMsg == null)) {
+            if (offlineMsg == null) {
+                offlineMsg = statusQueue.poll(200, TimeUnit.MILLISECONDS);
+            }
+            if (!offline) {
+                Device d = deviceRepository.findById(deviceId).orElseThrow();
+                if (!d.isOnline()) offline = true;
+            }
+            if (offlineMsg == null && offline) {
+                Thread.sleep(200);
+            }
         }
         assertThat(offline).isTrue();
-
-        // WS offline message should arrive shortly after DB update
-        Map<String, Object> offlineMsg = statusQueue.poll(5, TimeUnit.SECONDS);
         assertThat(offlineMsg).isNotNull();
         assertThat(offlineMsg.get("type")).isEqualTo("robot_offline");
         assertThat(offlineMsg.get("device_id")).isEqualTo(deviceId);
