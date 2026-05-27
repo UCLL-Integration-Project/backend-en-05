@@ -41,6 +41,7 @@ public class StatusService {
         be.ucll.it.courses.backend.model.Device device = latestDevice.get();
         Optional<Telemetry> latestTelemetry = telemetryRepository.findFirstByOrderByTimeDesc();
         Optional<Event> latestEvent = eventRepository.findFirstByOrderByTimestampDesc();
+        Optional<Event> latestEventWithLocation = eventRepository.findFirstByLatitudeIsNotNullOrderByTimestampDesc();
 
         java.time.OffsetDateTime lastSeen = device.getLastSeen().atOffset(java.time.ZoneOffset.UTC);
         boolean wifiConnected = device.isOnline();
@@ -66,6 +67,9 @@ public class StatusService {
         Short waterLevelPct = latestTelemetry.map(Telemetry::getWaterLevelPct).orElse(null);
         boolean waterWarning = waterLevelPct != null && waterLevelPct < 20;
 
+        Double lastKnownLat = latestEventWithLocation.map(Event::getLatitude).orElse(null);
+        Double lastKnownLng = latestEventWithLocation.map(Event::getLongitude).orElse(null);
+
         return Optional.of(new RobotStatusResponse(
             mode,
             batteryPct,
@@ -73,7 +77,9 @@ public class StatusService {
             lastSeen,
             latestEvent.map(Event::getIncidentId).orElse(null),
             waterLevelPct,
-            waterWarning
+            waterWarning,
+                lastKnownLat,
+                lastKnownLng
         ));
     }
 }

@@ -43,11 +43,7 @@ public class LowWaterAlertIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testLowWaterAlertFlow() throws Exception {
-        // Ensure device exists
-        if (deviceRepository.findById("ESP32-01").isEmpty()) {
-            be.ucll.it.courses.backend.model.Device device = new be.ucll.it.courses.backend.model.Device("ESP32-01", "token-01", "Test Robot");
-            deviceRepository.save(device);
-        }
+        deviceRepository.save(new be.ucll.it.courses.backend.model.Device("ESP32-01", "token-01", "Test Robot"));
 
         // 1. Connect to WebSocket
         WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(
@@ -79,6 +75,9 @@ public class LowWaterAlertIntegrationTest extends BaseIntegrationTest {
                 (short) 18,
                 null,
                 null,
+                null,
+                null,
+                null,
                 "low_water"
         );
 
@@ -102,6 +101,9 @@ public class LowWaterAlertIntegrationTest extends BaseIntegrationTest {
                 25.0f,
                 (short) 80,
                 (short) 30,
+                null,
+                null,
+                null,
                 null,
                 null,
                 "fire"

@@ -25,6 +25,9 @@ public record EventRequest(
     Integer duration_s,
 
     Boolean is_extinguished,
+    Double latitude,
+    Double longitude,
+    Integer locationAccuracy_m,
 
     @Pattern(regexp = "fire|low_water", message = "event_type must be 'fire' or 'low_water'")
     String event_type

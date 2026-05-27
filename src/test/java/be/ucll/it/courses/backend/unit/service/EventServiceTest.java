@@ -46,6 +46,9 @@ class EventServiceTest {
             (short) 50,
             10,
             true,
+            null,
+            null,
+            null,
             "fire"
         );
         String deviceId = "test-device";
@@ -72,7 +75,7 @@ class EventServiceTest {
     @Test
     void createEventReturnsDuplicateWhenEventExistsWithinWindow() {
         OffsetDateTime now = OffsetDateTime.now();
-        EventRequest request = new EventRequest(now, 25.0f, (short) 80, (short) 50, 10, true, "fire");
+        EventRequest request = new EventRequest(now, 25.0f, (short) 80, (short) 50, 10, true, null, null, null, "fire");
         String deviceId = "test-device";
         UUID existingId = UUID.randomUUID();
 
@@ -96,7 +99,7 @@ class EventServiceTest {
     @Test
     void createEventCreatesNewRecordWhenOutsideDeduplicationWindow() {
         OffsetDateTime now = OffsetDateTime.now();
-        EventRequest request = new EventRequest(now, 25.0f, (short) 80, (short) 50, 10, true, "fire");
+        EventRequest request = new EventRequest(now, 25.0f, (short) 80, (short) 50, 10, true, null, null, null, "fire");
         String deviceId = "test-device";
         UUID newId = UUID.randomUUID();
 

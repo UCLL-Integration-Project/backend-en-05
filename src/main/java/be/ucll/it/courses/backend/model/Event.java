@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -42,6 +43,16 @@ public class Event {
     @Column(name = "event_type")
     private String eventType;
 
+    @Column(name="latitude")
+    private Double latitude;
+
+    @Column(name="longitude")
+    private Double longitude;
+
+    @Column(name="location_accuracy_m")
+    private Integer locationAccuracyM;
+
+
     public Event() {}
 
     public UUID getIncidentId() { return incidentId; }
@@ -70,4 +81,13 @@ public class Event {
 
     public String getEventType() { return eventType; }
     public void setEventType(String eventType) { this.eventType = eventType; }
+
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
+
+    public Integer getLocationAccuracyM() { return locationAccuracyM; }
+    public void setLocationAccuracyM(Integer locationAccuracyM) {this.locationAccuracyM=locationAccuracyM;}
 }

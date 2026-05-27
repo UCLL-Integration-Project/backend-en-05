@@ -10,6 +10,8 @@ public record EventListItemResponse(
     Short battery_pct,
     Integer duration_s,
     Boolean is_extinguished,
+    Double latitude,
+    Double longitude,
     String event_type,
     Short water_level_pct
 ) {}

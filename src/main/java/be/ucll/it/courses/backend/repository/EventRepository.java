@@ -13,4 +13,5 @@ import java.util.UUID;
 public interface EventRepository extends JpaRepository<Event, UUID>, JpaSpecificationExecutor<Event> {
     Optional<Event> findFirstByOrderByTimestampDesc();
     Optional<Event> findFirstByDeviceIdAndTimestampBetween(String deviceId, OffsetDateTime from, OffsetDateTime to);
+    Optional<Event> findFirstByLatitudeIsNotNullOrderByTimestampDesc();
 }
