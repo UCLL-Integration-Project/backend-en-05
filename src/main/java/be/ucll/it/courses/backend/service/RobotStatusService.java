@@ -6,6 +6,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -143,11 +145,29 @@ public class RobotStatusService {
     }
 
     private void broadcastOfflineStatus(Device device) {
-        messagingTemplate.convertAndSend("/topic/status", Map.of(
+        // Capture values now, then defer the WS broadcast until after the
+        // surrounding @Transactional commits. Broadcasting in-transaction races
+        // with the DB commit in CI: the DB-visible offline state can lag behind
+        // the broadcast, and the broker dispatch can be silently dropped if the
+        // transaction is still open. Running afterCommit guarantees the DB
+        // state is durable before any subscriber sees the broadcast.
+        final String deviceId = device.getDeviceId();
+        final LocalDateTime lastSeen = device.getLastSeen();
+        Runnable broadcast = () -> messagingTemplate.convertAndSend("/topic/status", Map.of(
             "type", "robot_offline",
-            "device_id", device.getDeviceId(),
-            "last_seen", device.getLastSeen() != null ? 
-                device.getLastSeen().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "unknown"
+            "device_id", deviceId,
+            "last_seen", lastSeen != null ?
+                lastSeen.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "unknown"
         ));
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    broadcast.run();
+                }
+            });
+        } else {
+            broadcast.run();
+        }
     }
 }
