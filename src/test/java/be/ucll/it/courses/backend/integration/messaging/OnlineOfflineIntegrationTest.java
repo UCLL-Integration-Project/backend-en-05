@@ -93,14 +93,20 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
         }
         assertThat(online).isTrue();
 
-        // 2. Wait for timeout (threshold is 1s, scheduler runs every 5s)
-        Map<String, Object> offlineMsg = statusQueue.poll(10, TimeUnit.SECONDS);
+        // 2. Wait for scheduler to mark offline in DB (threshold=1s, rate=1s)
+        long offlineStart = System.currentTimeMillis();
+        boolean offline = false;
+        while (System.currentTimeMillis() - offlineStart < 15000) {
+            Device d = deviceRepository.findById(deviceId).orElseThrow();
+            if (!d.isOnline()) { offline = true; break; }
+            Thread.sleep(200);
+        }
+        assertThat(offline).isTrue();
+
+        // WS offline message should arrive shortly after DB update
+        Map<String, Object> offlineMsg = statusQueue.poll(5, TimeUnit.SECONDS);
         assertThat(offlineMsg).isNotNull();
         assertThat(offlineMsg.get("type")).isEqualTo("robot_offline");
         assertThat(offlineMsg.get("device_id")).isEqualTo(deviceId);
-
-        // Verify DB status
-        Device device = deviceRepository.findById(deviceId).orElseThrow();
-        assertThat(device.isOnline()).isFalse();
     }
 }
