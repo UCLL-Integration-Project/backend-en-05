@@ -44,10 +44,9 @@ public class LowWaterAlertIntegrationTest extends BaseIntegrationTest {
     @Test
     void testLowWaterAlertFlow() throws Exception {
         // Ensure device exists
-        if (deviceRepository.findById("ESP32-01").isEmpty()) {
-            be.ucll.it.courses.backend.model.Device device = new be.ucll.it.courses.backend.model.Device("ESP32-01", "token-01", "Test Robot");
-            deviceRepository.save(device);
-        }
+        String deviceId = "ESP32-WATER";
+        String token = "token-water";
+        deviceRepository.save(new be.ucll.it.courses.backend.model.Device(deviceId, token, "Test Water Robot"));
 
         // 1. Connect to WebSocket
         WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(
@@ -83,8 +82,8 @@ public class LowWaterAlertIntegrationTest extends BaseIntegrationTest {
         );
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer token-01");
-        headers.set("X-Device-ID", "ESP32-01");
+        headers.set("Authorization", "Bearer " + token);
+        headers.set("X-Device-ID", deviceId);
         HttpEntity<EventRequest> warningEntity = new HttpEntity<>(warningRequest, headers);
 
         ResponseEntity<Void> warningResponse = restTemplate.postForEntity("/v1/events", warningEntity, Void.class);

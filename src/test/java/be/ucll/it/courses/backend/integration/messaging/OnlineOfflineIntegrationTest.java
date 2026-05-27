@@ -33,17 +33,21 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private DeviceRepository deviceRepository;
 
+    @Autowired
+    private be.ucll.it.courses.backend.repository.EventRepository eventRepository;
+
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
+        eventRepository.deleteAll();
         deviceRepository.deleteAll();
     }
 
     @Test
     void testRobotOnlineOfflineCycle() throws Exception {
         // Ensure device exists
-        String deviceId = "ESP32-01";
+        String deviceId = "ESP32-ONLINE";
         if (deviceRepository.findById(deviceId).isEmpty()) {
-            deviceRepository.save(new Device(deviceId, "token", "Test Robot"));
+            deviceRepository.save(new Device(deviceId, "token-online", "Test Robot"));
         }
 
         WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(
@@ -78,19 +82,28 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
         assertThat(onlineMsg.get("type")).isEqualTo("robot_online");
         assertThat(onlineMsg.get("device_id")).isEqualTo(deviceId);
 
-        // Verify DB status
-        Device device = deviceRepository.findById(deviceId).orElseThrow();
-        assertThat(device.isOnline()).isTrue();
+        // Verify DB status - Wait up to 2 seconds for transaction to commit if needed
+        long start = System.currentTimeMillis();
+        boolean online = false;
+        while (System.currentTimeMillis() - start < 2000) {
+            Device d = deviceRepository.findById(deviceId).orElseThrow();
+            if (d.isOnline()) {
+                online = true;
+                break;
+            }
+            Thread.sleep(100);
+        }
+        assertThat(online).isTrue();
 
         // 2. Wait for timeout (threshold is 1s, scheduler runs every 5s)
-        // We might need to wait up to 6-7 seconds
+        // We might need to wait up to 10 seconds
         Map<String, Object> offlineMsg = statusQueue.poll(10, TimeUnit.SECONDS);
         assertThat(offlineMsg).isNotNull();
         assertThat(offlineMsg.get("type")).isEqualTo("robot_offline");
         assertThat(offlineMsg.get("device_id")).isEqualTo(deviceId);
 
         // Verify DB status
-        device = deviceRepository.findById(deviceId).orElseThrow();
+        Device device = deviceRepository.findById(deviceId).orElseThrow();
         assertThat(device.isOnline()).isFalse();
     }
 }

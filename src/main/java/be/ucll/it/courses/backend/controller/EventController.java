@@ -32,12 +32,16 @@ public class EventController {
 
     @PostMapping
     public ResponseEntity<EventResponse> createEvent(
-            @RequestHeader(value = "Authorization") String authorization,
-            @RequestHeader(value = "X-Device-ID") String deviceId,
+            @RequestHeader(value = "Authorization", required = false) String authorization,
+            @RequestHeader(value = "X-Device-ID", required = false) String deviceId,
             @Valid @RequestBody EventRequest request) {
 
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             throw new UnauthorizedException("Invalid or missing Authorization header");
+        }
+
+        if (deviceId == null || deviceId.isBlank()) {
+            throw new UnauthorizedException("Invalid or missing X-Device-ID header");
         }
 
         String token = authorization.substring(7);

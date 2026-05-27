@@ -116,7 +116,7 @@ public class RobotStatusService {
         );
     }
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedRate = 1000)
     @Transactional
     public void checkHeartbeats() {
         List<Device> devices = deviceRepository.findAll();
@@ -124,8 +124,8 @@ public class RobotStatusService {
 
         for (Device device : devices) {
             if (device.isOnline() && device.getLastSeen() != null) {
-                long silenceSeconds = now.toEpochSecond(ZoneOffset.UTC) - device.getLastSeen().toEpochSecond(ZoneOffset.UTC);
-                if (silenceSeconds > offlineThresholdSeconds) {
+                java.time.Duration silence = java.time.Duration.between(device.getLastSeen(), now);
+                if (silence.getSeconds() >= offlineThresholdSeconds) {
                     device.setOnline(false);
                     deviceRepository.save(device);
                     broadcastOfflineStatus(device);
