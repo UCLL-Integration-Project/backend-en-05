@@ -3,6 +3,7 @@ package be.ucll.it.courses.backend.integration.messaging;
 import be.ucll.it.courses.backend.integration.BaseIntegrationTest;
 import be.ucll.it.courses.backend.model.Device;
 import be.ucll.it.courses.backend.repository.DeviceRepository;
+import be.ucll.it.courses.backend.repository.EventRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -36,6 +37,9 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private be.ucll.it.courses.backend.repository.EventRepository eventRepository;
 
+    @Autowired
+    private EventRepository eventRepository;
+
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
         eventRepository.deleteAll();
@@ -48,6 +52,7 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
         String deviceId = "ESP32-ONLINE";
         if (deviceRepository.findById(deviceId).isEmpty()) {
             deviceRepository.save(new Device(deviceId, "token-online", "Test Robot"));
+            deviceRepository.save(new Device(deviceId, "token-01", "Test Robot"));
         }
 
         WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(
@@ -94,6 +99,12 @@ public class OnlineOfflineIntegrationTest extends BaseIntegrationTest {
             Thread.sleep(100);
         }
         assertThat(online).isTrue();
+        // Small wait to ensure recordHeartbeat's transaction has committed before reading DB
+        Thread.sleep(100);
+
+        // Verify DB status
+        Device device = deviceRepository.findById(deviceId).orElseThrow();
+        assertThat(device.isOnline()).isTrue();
 
         // 2. Wait for timeout (threshold is 1s, scheduler runs every 5s)
         // We might need to wait up to 10 seconds

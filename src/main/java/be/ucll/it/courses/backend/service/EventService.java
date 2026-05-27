@@ -61,6 +61,8 @@ public class EventService {
                 e.getBatteryPct(),
                 e.getDurationS(),
                 e.getIsExtinguished(),
+                e.getLatitude(),
+                e.getLongitude(),
                 e.getEventType(),
                 e.getWaterLevelPct()
             ))
@@ -92,6 +94,9 @@ public class EventService {
         event.setBatteryPct(request.battery_pct());
         event.setDurationS(request.duration_s());
         event.setIsExtinguished(request.is_extinguished());
+        event.setLatitude(request.latitude());
+        event.setLongitude(request.longitude());
+        event.setLocationAccuracyM(request.locationAccuracy_m());
         event.setWaterLevelPct(request.water_level_pct());
         event.setDeviceId(deviceId);
         event.setEventType(request.event_type());
@@ -105,6 +110,8 @@ public class EventService {
             savedEvent.getBatteryPct(),
             savedEvent.getDurationS(),
             savedEvent.getIsExtinguished(),
+            savedEvent.getLatitude(),
+            savedEvent.getLongitude(),
             savedEvent.getEventType(),
             savedEvent.getWaterLevelPct()
         ));

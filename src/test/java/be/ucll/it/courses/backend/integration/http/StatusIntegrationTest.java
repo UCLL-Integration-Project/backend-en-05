@@ -33,7 +33,7 @@ public class StatusIntegrationTest extends BaseIntegrationTest {
         deviceRepository.deleteAll();
 
         // Save a default device to avoid 404 in status tests
-        be.ucll.it.courses.backend.model.Device device = new be.ucll.it.courses.backend.model.Device("ESP32-01", "token", "Robot");
+        be.ucll.it.courses.backend.model.Device device = new be.ucll.it.courses.backend.model.Device("ESP32-01", "token-01", "Robot");
         device.setLastSeen(java.time.LocalDateTime.now());
         device.setOnline(true);
         deviceRepository.save(device);

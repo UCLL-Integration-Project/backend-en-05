@@ -11,5 +11,7 @@ public record RobotStatusResponse(
     OffsetDateTime last_seen,
     UUID last_event_id,
     Short water_level_pct,
-    Boolean water_warning
+    Boolean water_warning,
+    Double last_known_lat,
+    Double last_known_lng
 ) {}

@@ -34,6 +34,8 @@ public class TelemetryController {
             @RequestHeader(value = "X-Device-ID", required = false) String deviceId,
             @RequestBody Telemetry telemetry) {
 
+        System.out.println("Received HTTP Telemetry from device: " + deviceId + " - Water Level: " + telemetry.getWaterLevelPct() + "%");
+
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             throw new UnauthorizedException("Invalid or missing Authorization header");
         }

@@ -26,6 +26,7 @@ public class RobotWebSocketController {
      */
     @MessageMapping("/telemetry")
     public void handleTelemetry(@Payload RobotTelemetryMessage telemetry) {
+        System.out.println("Received WS Telemetry from device: " + telemetry.getDeviceId() + " - Water Level: " + telemetry.getWaterLevelPct() + "%");
         // Record heartbeat
         robotStatusService.recordHeartbeat(telemetry.getDeviceId());
 
