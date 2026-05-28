@@ -39,9 +39,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
             .headers(headers -> headers
                 .contentSecurityPolicy(csp -> csp.policyDirectives(
-                    "default-src 'self'; script-src 'self'; style-src 'self'; " +
-                    "connect-src 'self' wss://backend-en-05-itip-en-05.apps.okd.ucll.cloud https://backend-en-05-itip-en-05.apps.okd.ucll.cloud; " +
-                    "img-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+                    "default-src 'self'; script-src 'self' 'unsafe-inline'; " +
+                    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+                    "connect-src 'self' wss://backend-en-05-itip-en-05.apps.okd.ucll.cloud https://backend-en-05-itip-en-05.apps.okd.ucll.cloud https://dev-pt13ynuua1vt84mg.eu.auth0.com; " +
+                    "img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
                 ))
                 .frameOptions(frame -> frame.deny())
                 .httpStrictTransportSecurity(hsts -> hsts
@@ -71,9 +72,10 @@ public class SecurityConfig {
             )
             .headers(headers -> headers
                 .contentSecurityPolicy(csp -> csp.policyDirectives(
-                    "default-src 'self'; script-src 'self'; style-src 'self'; " +
-                    "connect-src 'self' wss://backend-en-05-itip-en-05.apps.okd.ucll.cloud https://backend-en-05-itip-en-05.apps.okd.ucll.cloud; " +
-                    "img-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+                    "default-src 'self'; script-src 'self' 'unsafe-inline'; " +
+                    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+                    "connect-src 'self' wss://backend-en-05-itip-en-05.apps.okd.ucll.cloud https://backend-en-05-itip-en-05.apps.okd.ucll.cloud https://dev-pt13ynuua1vt84mg.eu.auth0.com; " +
+                    "img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
                 ))
                 .frameOptions(frame -> frame.deny())
                 .httpStrictTransportSecurity(hsts -> hsts
