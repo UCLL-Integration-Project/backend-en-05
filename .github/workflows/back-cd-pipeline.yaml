@@ -70,11 +70,12 @@ jobs:
       - name: Deploy to OpenShift
         run: |
           # Update the deployment manifest with the specific image SHA to ensure a rolling update
-          sed -i "s|image: .*|image: ${{ env.IMAGE_LOWER }}:${{ github.event.workflow_run.head_sha }}|g" k8s/backend/deployment.yaml
+          $content = Get-Content k8s/backend/deployment.yaml
+          $content -replace 'image: .*', "image: $($env:IMAGE_LOWER):${{ github.event.workflow_run.head_sha }}" | Set-Content k8s/backend/deployment.yaml
           
           oc apply -f k8s/backend/imagestream.yaml
           # Force OKD to import the image from GHCR immediately
-          oc import-image backend-en-05:staging --from=${{ env.IMAGE_LOWER }}:staging --confirm
+          oc import-image backend-en-05:staging --from="$($env:IMAGE_LOWER):staging" --confirm
           
           oc apply -f k8s/backend/service.yaml
           oc apply -f k8s/backend/deployment.yaml
@@ -87,45 +88,57 @@ jobs:
           
           # Wait for the rollout to complete
           oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=10m
+        shell: powershell
 
       - name: Smoke Test
         id: smoke-test
         run: |
-          ROUTE_HOST=$(oc get route backend-en-05 -n itip-en-05 -o jsonpath='{.spec.host}')
-          HEALTH_URL="https://${ROUTE_HOST}/v1/health"
-          TIMEOUT=30
-          START_TIME=$(date +%s)
-          SUCCESS=false
+          $ROUTE_HOST = oc get route backend-en-05 -n itip-en-05 -o jsonpath='{.spec.host}'
+          $HEALTH_URL = "https://$ROUTE_HOST/v1/health"
+          $TIMEOUT = 30
+          $START_TIME = [DateTimeOffset]::Now.ToUnixTimeSeconds()
+          $SUCCESS = $false
 
-          echo "Running smoke test against: ${HEALTH_URL}"
-          while [ $(( $(date +%s) - START_TIME )) -lt $TIMEOUT ]; do
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "${HEALTH_URL}" 2>/dev/null || echo "000")
-            echo "Health check status: ${HTTP_STATUS}"
-            if [ "$HTTP_STATUS" = "200" ]; then
-              SUCCESS=true
+          Write-Host "Running smoke test against: $HEALTH_URL"
+          while (([DateTimeOffset]::Now.ToUnixTimeSeconds() - $START_TIME) -lt $TIMEOUT) {
+            try {
+              $response = Invoke-WebRequest -Uri $HEALTH_URL -UseBasicParsing -TimeoutSec 5
+              $HTTP_STATUS = [int]$response.StatusCode
+            } catch {
+              if ($_.Exception.Response) {
+                $HTTP_STATUS = [int]$_.Exception.Response.StatusCode
+              } else {
+                $HTTP_STATUS = 0
+              }
+            }
+            Write-Host "Health check status: $HTTP_STATUS"
+            if ($HTTP_STATUS -eq 200) {
+              $SUCCESS = $true
               break
-            fi
-            sleep 2
-          done
+            }
+            Start-Sleep -Seconds 2
+          }
 
-          echo "## Smoke Test Result (Staging)" >> $GITHUB_STEP_SUMMARY
-          echo "**Endpoint:** \`${HEALTH_URL}\`" >> $GITHUB_STEP_SUMMARY
-          if [ "$SUCCESS" = "true" ]; then
-            echo "**Result:** PASSED - \`GET /v1/health\` returned 200 OK" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "**Result:** FAILED - \`GET /v1/health\` did not return 200 within ${TIMEOUT} seconds" >> $GITHUB_STEP_SUMMARY
+          "## Smoke Test Result (Staging)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "**Endpoint:** ``$HEALTH_URL``" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          if ($SUCCESS) {
+            "**Result:** PASSED - ``GET /v1/health`` returned 200 OK" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          } else {
+            "**Result:** FAILED - ``GET /v1/health`` did not return 200 within $TIMEOUT seconds" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
             exit 1
-          fi
+          }
+        shell: powershell
 
       - name: Automatic Rollback on Failed Smoke Test
         if: failure() && steps.smoke-test.outcome == 'failure'
         run: |
-          echo "Smoke test failed — rolling back staging deployment"
+          Write-Host "Smoke test failed — rolling back staging deployment"
           oc rollout undo deployment/backend-en-05 -n itip-en-05
           oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=5m
 
-          echo "## Automatic Rollback (Staging)" >> $GITHUB_STEP_SUMMARY
-          echo "Smoke test failed. Deployment has been automatically rolled back to the previous revision." >> $GITHUB_STEP_SUMMARY
+          "## Automatic Rollback (Staging)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "Smoke test failed. Deployment has been automatically rolled back to the previous revision." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+        shell: powershell
 
   # deploy to the production, runs only on release tags
   deploy-to-production:
@@ -186,11 +199,12 @@ jobs:
       - name: Deploy to OpenShift
         run: |
           # Update the deployment manifest with the production tag
-          sed -i "s|image: .*|image: ${{ env.IMAGE_LOWER }}:${{ github.event.workflow_run.head_branch }}|g" k8s/backend/deployment.yaml
+          $content = Get-Content k8s/backend/deployment.yaml
+          $content -replace 'image: .*', "image: $($env:IMAGE_LOWER):${{ github.event.workflow_run.head_branch }}" | Set-Content k8s/backend/deployment.yaml
           
           oc apply -f k8s/backend/imagestream.yaml
           # Force OKD to import the image from GHCR immediately
-          oc import-image backend-en-05:prod --from=${{ env.IMAGE_LOWER }}:prod --confirm
+          oc import-image backend-en-05:prod --from="$($env:IMAGE_LOWER):prod" --confirm
           
           oc apply -f k8s/backend/service.yaml
           oc apply -f k8s/backend/deployment.yaml
@@ -198,3 +212,4 @@ jobs:
           
           # Wait for the rollout to complete
           oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=10m
+        shell: powershell
