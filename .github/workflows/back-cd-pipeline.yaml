@@ -84,13 +84,7 @@ jobs:
           oc apply -f k8s/backup/cronjob.yaml
           
           # Wait for the rollout to complete
-          if ! oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=10m; then
-            echo "Deployment failed! Gathering diagnostics..."
-            oc get pods -n itip-en-05 -l app=backend-en-05
-            oc describe deployment backend-en-05 -n itip-en-05
-            oc logs deployment/backend-en-05 -n itip-en-05 --all-containers --tail=100
-            exit 1
-          fi
+          oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=10m
 
       - name: Smoke Test
         id: smoke-test
@@ -199,10 +193,4 @@ jobs:
           oc apply -f k8s/backend/route.yaml
           
           # Wait for the rollout to complete
-          if ! oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=10m; then
-            echo "Deployment failed! Gathering diagnostics..."
-            oc get pods -n itip-en-05 -l app=backend-en-05
-            oc describe deployment backend-en-05 -n itip-en-05
-            oc logs deployment/backend-en-05 -n itip-en-05 --all-containers --tail=100
-            exit 1
-          fi
+          oc rollout status deployment/backend-en-05 -n itip-en-05 --timeout=10m
