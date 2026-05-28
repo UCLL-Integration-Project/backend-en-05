@@ -31,13 +31,13 @@ jobs:
           $IMAGE_LOWER = "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}".ToLower()
           docker pull "$IMAGE_LOWER:${{ inputs.version_to_rollback_to }}"
           echo "IMAGE_LOWER=$IMAGE_LOWER" >> $env:GITHUB_ENV
-        shell: pwsh
+        shell: powershell
 
       - name: Re-tag as Production and Push
         run: |
           docker tag "$env:IMAGE_LOWER:${{ inputs.version_to_rollback_to }}" "$env:IMAGE_LOWER:prod"
           docker push "$env:IMAGE_LOWER:prod"
-        shell: pwsh
+        shell: powershell
 
       - name: Rollback Success Message
         run: echo "Successfully rolled back Backend Production to version ${{ inputs.version_to_rollback_to }}"

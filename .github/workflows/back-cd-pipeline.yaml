@@ -42,7 +42,7 @@ jobs:
         run: |
           $IMAGE_LOWER = "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}".ToLower()
           echo "IMAGE_LOWER=$IMAGE_LOWER" >> $env:GITHUB_ENV
-        shell: pwsh
+        shell: powershell
 
       - name: Build and push Staging Docker image
         uses: docker/build-push-action@v5
@@ -158,7 +158,7 @@ jobs:
         run: |
           $IMAGE_LOWER = "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}".ToLower()
           echo "IMAGE_LOWER=$IMAGE_LOWER" >> $env:GITHUB_ENV
-        shell: pwsh
+        shell: powershell
 
       - name: Build and push Production Docker image
         uses: docker/build-push-action@v5
