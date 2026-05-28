@@ -28,14 +28,16 @@ jobs:
 
       - name: Pull older stable image
         run: |
-          IMAGE_LOWER=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
-          docker pull $IMAGE_LOWER:${{ inputs.version_to_rollback_to }}
+          $IMAGE_LOWER = "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}".ToLower()
+          docker pull "$IMAGE_LOWER:${{ inputs.version_to_rollback_to }}"
+          echo "IMAGE_LOWER=$IMAGE_LOWER" >> $env:GITHUB_ENV
+        shell: pwsh
 
       - name: Re-tag as Production and Push
         run: |
-          IMAGE_LOWER=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
-          docker tag $IMAGE_LOWER:${{ inputs.version_to_rollback_to }} $IMAGE_LOWER:prod
-          docker push $IMAGE_LOWER:prod
+          docker tag "$env:IMAGE_LOWER:${{ inputs.version_to_rollback_to }}" "$env:IMAGE_LOWER:prod"
+          docker push "$env:IMAGE_LOWER:prod"
+        shell: pwsh
 
       - name: Rollback Success Message
         run: echo "Successfully rolled back Backend Production to version ${{ inputs.version_to_rollback_to }}"
