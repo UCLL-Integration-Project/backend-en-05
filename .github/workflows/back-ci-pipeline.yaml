@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-test-and-package:
-    runs-on: self-hosted
+    runs-on: [self-hosted, matg-laptop]
 
     steps:
       - name: Checkout repository
