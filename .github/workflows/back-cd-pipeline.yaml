@@ -54,6 +54,7 @@ jobs:
             ${{ env.IMAGE_LOWER }}:${{ github.event.workflow_run.head_sha }}
           provenance: false
 
+      # -- From here the 15 minutes skip --
       - name: Install OpenShift CLI
         uses: redhat-actions/openshift-tools-installer@v1
         with:
@@ -74,9 +75,10 @@ jobs:
           $content -replace 'image: .*', "image: $($env:IMAGE_LOWER):${{ github.event.workflow_run.head_sha }}" | Set-Content k8s/backend/deployment.yaml
           
           oc apply -f k8s/backend/imagestream.yaml
-          # Force OKD to import the image from GHCR immediately
+          # -- Force OKD to import the image from GHCR immediately (not wait 15 minutes) ---
           oc import-image backend-en-05:staging --from="$($env:IMAGE_LOWER):staging" --confirm
           
+          # Apply the changes to the cluster
           oc apply -f k8s/backend/service.yaml
           oc apply -f k8s/backend/deployment.yaml
           oc apply -f k8s/backend/route.yaml
@@ -203,7 +205,7 @@ jobs:
           $content -replace 'image: .*', "image: $($env:IMAGE_LOWER):${{ github.event.workflow_run.head_branch }}" | Set-Content k8s/backend/deployment.yaml
           
           oc apply -f k8s/backend/imagestream.yaml
-          # Force OKD to import the image from GHCR immediately
+          # --- Force OKD to import the image from GHCR immediately () ---
           oc import-image backend-en-05:prod --from="$($env:IMAGE_LOWER):prod" --confirm
           
           oc apply -f k8s/backend/service.yaml
