@@ -75,6 +75,17 @@ For OKD deployment, change `REACT_APP_API_URL` to `https://backend-en-05-itip-en
 
 This project implements 13 security features across three stories: **SEC-01** (TLS/HTTPS), **SEC-02** (RBAC & MFA), and **SEC-03** (Security Headers). All security configuration is centralized in `SecurityConfig.java`.
 
+### Requirements Covered
+
+| Req ID | Requirement | Points |
+|:---|:---|:---|
+| **SD-20** | Implement user authentication and authorisation using OAuth2 / OpenID Connect via an identity provider (Auth0) | 8 |
+| **SEC-01** | Implement role-based access control (RBAC) and demonstrate that it is enforced at the API level | 5 |
+| **SEC-02** | Implement multi-factor authentication (MFA) for user accounts | 5 |
+| **SEC-03** | Manage application secrets using environment-based approach with no hardcoded credentials anywhere in the codebase | 3 |
+| **SEC-08** | Implement and enforce HTTPS with correct TLS configuration and certificate management | 3 |
+| **SEC-10** | Implement security headers (CSP, HSTS, X-Frame-Options, etc.) and verify with a scanning tool | 3 |
+
 ---
 
 ### 1. OAuth2 / OpenID Connect Authentication (SEC-02)

@@ -38,10 +38,13 @@ class RobotStatusServiceTest {
     @Mock
     private SimpMessagingTemplate messagingTemplate;
 
+    @Mock
+    private be.ucll.it.courses.backend.service.TelemetryCacheService telemetryCacheService;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        service = new RobotStatusService(deviceRepository, telemetryRepository, messagingTemplate);
+        service = new RobotStatusService(deviceRepository, telemetryRepository, messagingTemplate, telemetryCacheService);
         // Test config matches: app.status.offline-threshold-seconds=1
         ReflectionTestUtils.setField(service, "offlineThresholdSeconds", 1L);
     }

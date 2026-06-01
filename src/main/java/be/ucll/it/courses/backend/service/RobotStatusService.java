@@ -22,14 +22,17 @@ public class RobotStatusService {
     private final DeviceRepository deviceRepository;
     private final be.ucll.it.courses.backend.repository.TelemetryRepository telemetryRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final TelemetryCacheService telemetryCacheService;
     private final Map<String, LocalDateTime> lastSavedTelemetry = new java.util.concurrent.ConcurrentHashMap<>();
 
-    public RobotStatusService(DeviceRepository deviceRepository, 
+    public RobotStatusService(DeviceRepository deviceRepository,
                               be.ucll.it.courses.backend.repository.TelemetryRepository telemetryRepository,
-                              SimpMessagingTemplate messagingTemplate) {
+                              SimpMessagingTemplate messagingTemplate,
+                              TelemetryCacheService telemetryCacheService) {
         this.deviceRepository = deviceRepository;
         this.telemetryRepository = telemetryRepository;
         this.messagingTemplate = messagingTemplate;
+        this.telemetryCacheService = telemetryCacheService;
     }
 
     @Transactional
@@ -61,6 +64,22 @@ public class RobotStatusService {
             
             telemetryRepository.save(telemetry);
             lastSavedTelemetry.put(message.getDeviceId(), now);
+
+            // Cache latest telemetry in Redis (NoSQL) for fast dashboard reads
+            try {
+                Map<String, Object> cacheData = Map.of(
+                    "deviceId", message.getDeviceId(),
+                    "waterLevelPct", (int) message.getWaterLevelPct(),
+                    "batteryPct", (int) message.getBatteryPct(),
+                    "fireDetected", message.isFireDetected(),
+                    "timestamp", now.toString()
+                );
+                telemetryCacheService.cacheLatestTelemetry(message.getDeviceId(), cacheData);
+            } catch (Exception e) {
+                // Redis is optional — if it's down, we just skip caching
+                System.out.println("Redis cache update skipped: " + e.getMessage());
+            }
+
             System.out.println("Telemetry saved for device: " + message.getDeviceId());
         }
     }
